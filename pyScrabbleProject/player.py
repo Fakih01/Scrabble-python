@@ -57,8 +57,6 @@ class Player:
         """
         shuffle(self._bag)
 
-
-
     def all_letters_from_rack(self, letters):
         """
         Determines if all letters are present in the player's rack.
