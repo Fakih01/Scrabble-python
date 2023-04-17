@@ -18,8 +18,6 @@ class Scrabble:
         self._player_rack = []
         self._draw_tiles(7)
         self._player_score = 0
-        self.Rack = ''.join(self._player_rack)
-        self.rackList = list(self.Rack)
 
     def _print_board(self):  #  prints board when p is pressed
         """
@@ -34,8 +32,8 @@ class Scrabble:
                 else:
                     print(self.SBoard[j][i], end='')
             print('')
-        print("Rack: ", self.rackList)
-        return self.rackList
+        print("Rack: ", self._player_rack)
+        return self._player_rack
 
     def getRack(self):
         getRackField = ''.join(self._player_rack)
@@ -46,8 +44,8 @@ class Scrabble:
         '''
         physically draws player's hand
         '''
-        for i in range(len(self.rackList)):
-            scrn.blit(resourceManagement.board_tiles[self.rackList[i]],
+        for i in range(len(self._player_rack)):
+            scrn.blit(resourceManagement.board_tiles[self._player_rack[i]],
                       (self.position[0] + resourceFile.Tile_Size[0] * i,
                        self.position[1]))
 
@@ -85,8 +83,8 @@ class Scrabble:
         """
         Returns a copy of the player's rack
         """
-        print("get_rack called", self.rackList)  # wrong rack called  # works now
-        return self.rackList
+        print("get_rack called", self._player_rack)  # wrong rack called  # works now
+        return self._player_rack
 
     def exchange_tiles(self, old):
         """

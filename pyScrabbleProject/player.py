@@ -29,10 +29,8 @@ class Player:
         self.size = (7 * resourceFile.Tile_Size[0],
                      resourceFile.Tile_Size[1])
         self.rect = pygame.Rect(self.position, self.size)
-        rack = scrabbleInstance.rackList
+        rack = scrabbleInstance._player_rack
         self.rackList = list(rack)
-        self._populate_bag()
-        self.shuffle_bag()
 
     def __contains__(self, position):
         '''
