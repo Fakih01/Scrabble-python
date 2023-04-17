@@ -2,7 +2,7 @@ import sys
 from random import shuffle
 
 import gamestate
-import tile
+import tileModule
 import resourceFile
 import move
 import pygame

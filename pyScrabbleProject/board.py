@@ -2,7 +2,7 @@ import pygame
 import colours
 import player
 import scrabble
-import tile
+import tileModule
 import resourceFile
 import scoringSystem as sS
 
