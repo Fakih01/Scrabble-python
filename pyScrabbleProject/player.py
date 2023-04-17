@@ -105,9 +105,9 @@ class Player:
         """
         Returns a copy of the player's rack
         """
-        print("get_the_rack called", self.rackList[:])  # trying
+        print("get_the_rack called", self.rackList)  # trying
         print("Now we need a new rack. fix it.")
-        return self.rackList[:]
+        return self.rackList
 
     def deck_exchange(self, deck, l):
         '''

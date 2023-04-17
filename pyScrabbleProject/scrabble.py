@@ -112,7 +112,7 @@ class Scrabble:
         Given a list of tiles (i, j, letter), check if valid, place on to board
         and add to player score.
         """
-
+        print("Tiles submitted:", tiles)
         if self._is_valid_move(tiles):
             self._score_turn(tiles)
             self._place_move(tiles)
@@ -433,10 +433,12 @@ class Scrabble:
         """
         Removed the letters from the player rack and draw new ones.
         """
+        print("Updating player rack")  # Debugging line
         for _, _, letter in tiles:
             self._player_rack.remove(letter)
 
         self._draw_tiles(len(tiles))
+        print("updated rack should be", self._player_rack)
 
     def _score_word(self, start, end, letters):
         """
