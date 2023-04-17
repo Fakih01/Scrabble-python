@@ -75,9 +75,6 @@ class Scrabble:
             if len(self._bag) > 0:
                 self._player_rack.append(self._bag.pop())
 
-        # Update rackList to reflect the new _player_rack
-        self.rackList = list(self._player_rack)  #unsure what this does for now but trying things to make it work
-
     def num_remaining_tiles(self):
         """
         Returns how many tiles remain in the bag.
