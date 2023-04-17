@@ -1,10 +1,13 @@
 import sys
 
+import scrabble
 import resourceFile
 from board import ScrabbleBoard as SB
 import player
 import deck
 import pygame
+
+import scrabble
 from scrabble import Scrabble
 
 
@@ -86,9 +89,8 @@ class GameState:  # Loads everything necessary and starts the game.
         self.ai = ai
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
-        self.p1 = player.Player((0, 750), self.scrabble)
+        self.p1 = self.scrabble
         self.p2 = player.Player((0, 750), self.scrabble)
-        self.deck = deck.Deck()
         self.turn = "1"             # Player 1 always goes first
         self.selectedTile = None    # Selected tile should be a letter only
         self.player_tiles = []
@@ -103,7 +105,7 @@ class GameState:  # Loads everything necessary and starts the game.
         self.gs = {"1": self.p1, "2": self.p2}
 
         # First, draw 7 tiles
-        self.p1.deck_draw(self.deck, 7)
+        self.p1._draw_tiles(7)
         #self.p2.deck_draw(self.deck, 7)
 
         self.currentMove = Tile(letter, self.scrabble)
@@ -170,7 +172,7 @@ class GameState:  # Loads everything necessary and starts the game.
                 print("handle board place, places tile on board at particular position")
                 self.selectedTile = None
             except:
-                self.gs[self.turn].rackList.append(self.selectedTile)  # add selected tile back to rack
+                self.gs[self.turn]._player_rack.append(self.selectedTile)  # add selected tile back to rack
                 self.selectedTile = None
             '''Works because the print statement is called and add move is functioning meaning the tiles are appended
             to the board_tiles list 
@@ -185,9 +187,9 @@ class GameState:  # Loads everything necessary and starts the game.
 
         # Places tile into hand
         if ind == -1:
-            self.gs[self.turn].rackList.append(self.selectedTile)
+            self.gs[self.turn]._player_rack.append(self.selectedTile)
         else:
-            self.gs[self.turn].rackList.insert(ind, self.selectedTile)
+            self.gs[self.turn]._player_rack.insert(ind, self.selectedTile)
 
         # Removes selected tile
         self.selectedTile = None
@@ -204,8 +206,8 @@ class GameState:  # Loads everything necessary and starts the game.
             return
 
         # Removes tile from hand
-        self.gs[self.turn].rackList.remove(self.selectedTile)  # updates list by removing(surely counts as currentmove?)
-        print(self.gs[self.turn].rackList)
+        self.gs[self.turn]._player_rack.remove(self.selectedTile)  # updates list by removing(surely counts as currentmove?)
+        print(self.gs[self.turn]._player_rack)
 
     def draw(self, scrn):
         '''
@@ -214,7 +216,7 @@ class GameState:  # Loads everything necessary and starts the game.
         self.board.draw(scrn, self.gs[self.turn].currentMove)
         player_position = (0, 750)
         if self.turn == "1":
-            self.scrabble.drawHand(scrn, self.resourceManagement, player_position)
+            self.p1.drawHand(scrn, self.resourceManagement, player_position)
         else:
             self.p2.drawHand(scrn, self.resourceManagement)
 
@@ -227,7 +229,7 @@ class GameState:  # Loads everything necessary and starts the game.
 
     def return_tiles_to_rack(self):
         for x, y, letter in self.gs[self.turn].currentMove.m:
-            self.gs[self.turn].rackList.append(letter)
+            self.gs[self.turn]._player_rack.append(letter)
             self.board.board_tiles[x][y] = None
         self.gs[self.turn].currentMove.m.clear()
 

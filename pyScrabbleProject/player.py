@@ -8,7 +8,7 @@ import move
 import pygame
 
 from scoringSystem import DISTRIBUTION
-from scrabble import Scrabble
+#from scrabble import Scrabble
 
 
 class Player:
