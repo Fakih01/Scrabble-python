@@ -21,7 +21,7 @@ class Scrabble:
         self.Rack = ''.join(self._player_rack)
         self.rackList = list(self.Rack)
 
-    def _print_board(self, rack_list= None):  #  prints board when p is pressed
+    def _print_board(self):  #  prints board when p is pressed
         """
         Prints an ASCII representation of the board
         """
