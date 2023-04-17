@@ -1,8 +1,5 @@
 from random import shuffle
 
-import pygame
-
-import gamestate
 import resourceFile
 from scoringSystem import *
 import twl
@@ -21,71 +18,6 @@ class Scrabble:
         self._player_rack = []
         self._draw_tiles(7)
         self._player_score = 0
-        self.position = (0, 750)
-        self.currentMove = gamestate.Tile(letter=True, SBoardInstance=self)
-        self.size = (7 * resourceFile.Tile_Size[0],
-                     resourceFile.Tile_Size[1])
-        self.rect = pygame.Rect(self.position, self.size)
-
-    def __contains__(self, position):
-        '''
-        Returns true if point is inside player hand rectangle, and false if
-        otherwise.
-        Uses pygame Rect.collidepoint method to compact code.
-        '''
-        return self.rect.collidepoint(position)
-
-    def get_tile_pos(self, position):
-        '''
-        Returns the index of the tile, if it exists at position pos.
-        Otherwise, return -1. Assumes that the position is already in the player
-        hand.
-        '''
-        # Normalize the position
-        position[0] -= self.position[0]
-
-        ind = position[0] // resourceFile.Tile_Size[0]
-        if ind < len(self._player_rack):
-            print("this is in position", ind)  # positioning of tile from hand
-            return ind
-
-        else:
-            return -1
-
-    def get_tile(self, position):
-        '''
-        Returns a single character from the position from hand.
-        If the character doesn't exist, raises an exception.
-        '''
-        ind = self.get_tile_pos(position)
-
-        if ind == -1:
-            raise Exception("error: that isn't a tile")
-
-        t = self._player_rack[ind]
-        print("this is the letter", t, "at position:", ind)
-        return t
-
-    def get_the_rack(self):
-        """
-        Returns a copy of the player's rack
-        """
-        print("get_the_rack called", self._player_rack)  # trying
-        print("Now we need a new rack. fix it.")
-        return self._player_rack
-
-    def deck_exchange(self, deck, l):
-        '''
-        Exchanges tiles in hand (list l) with random tiles in deck.
-        First checks to see that the list is a subset of hand.
-        '''
-        if not all(map(lambda i: i in self.rackList, l)):
-            raise Exception("error: cannot exchange non-existent board_tiles")
-
-        deck.place(l)
-
-        for i in l:
-            self.rackList.remove(i)
 
     def _print_board(self):  #  prints board when p is pressed
         """
