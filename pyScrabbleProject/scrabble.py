@@ -40,14 +40,14 @@ class Scrabble:
         print("getRack:", getRackField)
         return getRackField
 
-    def drawHand(self, scrn, resourceManagement):  # not used atm
+    def drawHand(self, scrn, resourceManagement, position):
         '''
-        physically draws player's hand
+        Draws player's hand
         '''
         for i in range(len(self._player_rack)):
             scrn.blit(resourceManagement.board_tiles[self._player_rack[i]],
-                      (self.position[0] + resourceFile.Tile_Size[0] * i,
-                       self.position[1]))
+                      (position[0] + resourceFile.Tile_Size[0] * i,
+                       position[1]))
 
     def _populate_bag(self):
         """

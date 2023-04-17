@@ -71,29 +71,6 @@ class Player:
         print("this is the letter", t, "at position:", ind)
         return t
 
-    def make_move(self, x, y, letter):  # not used
-        '''
-        Removes tile from hand and places it into active move (and ideally, the
-        board).
-        '''
-        if letter not in self.rackList:
-            raise Exception("error: cannot move what is not yours")
-        else:
-            print('make move')
-            self. currentMove.add_move(x, y, letter)
-
-        #self.get_tile(position)
-        #self.get_tile_pos(position)
-        #self.hand.remove(letter)
-
-    def takeback_move(self, x, y): # not used
-        '''
-        Removes tile from active move (placed on board) and replace it back into
-        hand.
-        '''
-        letter = self.currentMove.remove_move(x, y)
-        self.rackList.append(letter)
-
     def deck_draw(self, deck, n):
         '''
         Draws n tiles from deck   # might not be needed as have the function in scrabble.py
@@ -122,12 +99,12 @@ class Player:
         for i in l:
             self.rackList.remove(i)
 
-    def drawHand(self, scrn, resourceManagement):  # could move to scrabble.py file now as fully working
+    def drawHand(self, scrn, resourceManagement, position):
         '''
         Draws player's hand
         '''
         for i in range(len(self.rackList)):
             scrn.blit(resourceManagement.board_tiles[self.rackList[i]],
-                      (self.position[0] + resourceFile.Tile_Size[0] * i,
-                       self.position[1]))
+                      (position[0] + resourceFile.Tile_Size[0] * i,
+                       position[1]))
 

@@ -212,9 +212,9 @@ class GameState:  # Loads everything necessary and starts the game.
         Draws the state onto the screen scrn.
         '''
         self.board.draw(scrn, self.gs[self.turn].currentMove)
-
+        player_position = (0, 750)
         if self.turn == "1":
-            self.p1.drawHand(scrn, self.resourceManagement)
+            self.scrabble.drawHand(scrn, self.resourceManagement, player_position)
         else:
             self.p2.drawHand(scrn, self.resourceManagement)
 
