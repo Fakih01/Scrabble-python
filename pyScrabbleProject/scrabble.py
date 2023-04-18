@@ -152,6 +152,8 @@ class Scrabble:
         Determines if all letters are present in the player's rack.
         """
         rack = self._player_rack[:]
+        print("Checking rack:", rack)  # Debugging line
+        print("Checking letters:", letters)  # Debugging line
         for letter in letters:
             if letter in rack:
                 rack.remove(letter)

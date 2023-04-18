@@ -103,8 +103,8 @@ class Player:
         '''
         Draws player's hand
         '''
-        for i in range(len(self.rackList)):
-            scrn.blit(resourceManagement.board_tiles[self.rackList[i]],
+        for i in range(len(self.scrabble._player_rack)):
+            scrn.blit(resourceManagement.board_tiles[self.scrabble._player_rack[i]],
                       (position[0] + resourceFile.Tile_Size[0] * i,
                        position[1]))
 

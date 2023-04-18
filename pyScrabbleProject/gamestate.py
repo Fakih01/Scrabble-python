@@ -173,7 +173,7 @@ class GameState:  # Loads everything necessary and starts the game.
                 print("handle board place, places tile on board at particular position")
                 self.selectedTile = None
             except:
-                self.gs[self.turn].rackList.append(self.selectedTile)  # add selected tile back to rack
+                self.gs[self.turn].scrabble._player_rack.append(self.selectedTile)  # add selected tile back to rack
                 self.selectedTile = None
             '''Works because the print statement is called and add move is functioning meaning the tiles are appended
             to the board_tiles list 
@@ -188,9 +188,9 @@ class GameState:  # Loads everything necessary and starts the game.
 
         # Places tile into hand
         if ind == -1:
-            self.gs[self.turn].rackList.append(self.selectedTile)
+            self.gs[self.turn].scrabble._player_rack.append(self.selectedTile)
         else:
-            self.gs[self.turn].rackList.insert(ind, self.selectedTile)
+            self.gs[self.turn].scrabble._player_rack.insert(ind, self.selectedTile)
 
         # Removes selected tile
         self.selectedTile = None
@@ -207,8 +207,8 @@ class GameState:  # Loads everything necessary and starts the game.
             return
 
         # Removes tile from hand
-        self.gs[self.turn].rackList.remove(self.selectedTile)  # updates list by removing(surely counts as currentmove?)
-        print(self.gs[self.turn].rackList)
+        self.gs[self.turn].scrabble._player_rack.remove(self.selectedTile)  # updates list by removing(surely counts as currentmove?)
+        print(self.gs[self.turn].scrabble._player_rack)
 
     def draw(self, scrn):
         '''
@@ -219,7 +219,7 @@ class GameState:  # Loads everything necessary and starts the game.
         if self.turn == "1":
             self.p1.drawHand(scrn, self.resourceManagement, player_position)
         else:
-            self.p2.drawHand(scrn, self.resourceManagement)
+            self.p2.drawHand(scrn, self.resourceManagement, player_position)
 
         if self.selectedTile is not None:
             # Tile is selected and should hang onto the mouse
@@ -230,7 +230,7 @@ class GameState:  # Loads everything necessary and starts the game.
 
     def return_tiles_to_rack(self):
         for x, y, letter in self.gs[self.turn].currentMove.m:
-            self.gs[self.turn].rackList.append(letter)
+            self.gs[self.turn].scrabble._player_rack.append(letter)
             self.board.board_tiles[x][y] = None
         self.gs[self.turn].currentMove.m.clear()
 
