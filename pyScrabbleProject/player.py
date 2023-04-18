@@ -75,16 +75,16 @@ class Player:
         '''
         Draws n tiles from deck   # might not be needed as have the function in scrabble.py
         '''
-        print("deck_draw", self.rackList)
+        print("deck_draw", self.scrabble._player_rack)
         #self.rackList.extend(deck.take(n))  #not acc drawing any tiles
 
     def get_the_rack(self):
         """
         Returns a copy of the player's rack
         """
-        print("get_the_rack called", self.rackList)  # trying
+        print("get_the_rack called", self.scrabble._player_rack)  # trying
         print("Now we need a new rack. fix it.")
-        return self.rackList
+        return self.scrabble._player_rack
 
     def deck_exchange(self, deck, l):
         '''
