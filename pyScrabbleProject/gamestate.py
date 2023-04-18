@@ -168,9 +168,7 @@ class GameState:  # Loads everything necessary and starts the game.
                 # Stops people from trying to place tiles on a non-empty tile
                 # that is in move set (it throws a nasty little error when it
                 # does).
-                self.gs[self.turn].currentMove.add_move(ind[0], ind[1],
-                                                        self.selectedTile)
-                print("handle board place, places tile on board at particular position")
+                self.gs[self.turn].currentMove.add_move(ind[0], ind[1], self.selectedTile)
                 self.selectedTile = None
             except:
                 self.gs[self.turn].scrabble._player_rack.append(self.selectedTile)  # add selected tile back to rack
@@ -207,7 +205,7 @@ class GameState:  # Loads everything necessary and starts the game.
             return
 
         # Removes tile from hand
-        self.gs[self.turn].scrabble._player_rack.remove(self.selectedTile)  # updates list by removing(surely counts as currentmove?)
+        #self.gs[self.turn].scrabble._player_rack.remove(self.selectedTile)  # updates list by removing(surely counts as currentmove?)
         print(self.gs[self.turn].scrabble._player_rack)
 
     def draw(self, scrn):
@@ -260,7 +258,10 @@ class GameState:  # Loads everything necessary and starts the game.
         if len(tileList) == 0:
             return
 
-        if self.scrabble.submit_turn(tileList):  # calls submit_turn in scrabble.py + doesn't work
+        if self.scrabble.submit_turn(tileList):
+            for x, y, letter in tileList:
+                if letter in self.gs[self.turn].scrabble._player_rack:
+                    self.gs[self.turn].scrabble._player_rack.remove(letter)
             # Valid turn, move all played tiles to game.
             for tileTest in self.player_tiles:
                 if tileTest.on_board:
