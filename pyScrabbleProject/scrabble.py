@@ -36,20 +36,6 @@ class Scrabble:
         print("Rack: ", self._player_rack)
         return self._player_rack
 
-    def getRack(self):
-        getRackField = ''.join(self._player_rack)
-        print("getRack:", getRackField)
-        return getRackField
-
-    def drawHand(self, scrn, resourceManagement, position):
-        '''
-        Draws player's hand
-        '''
-        for i in range(len(self._player_rack)):
-            scrn.blit(resourceManagement.board_tiles[self._player_rack[i]],
-                      (position[0] + resourceFile.Tile_Size[0] * i,
-                       position[1]))
-
     def _populate_bag(self):
         """
         Fills the bag with the starting letter frequencies.
@@ -118,7 +104,7 @@ class Scrabble:
             self._score_turn(tiles)
             self._place_move(tiles)
             self._update_player_rack(tiles)
-            return True  # indent after done testing, tryna check if 'if' statement is broken in gs _submitturn
+            return True
         else:
             return False
 
