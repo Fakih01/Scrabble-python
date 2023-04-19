@@ -47,8 +47,8 @@ class Tile:
             self.bTiles[x][y] = letter
             print("The letters you have used are", word)
             # board.ScrabbleBoard.get_tile_pos(self,position)
-            print("after add move", self.board_y, self.board_x, letter, self.on_board)
-            print(self.bTiles)
+            #print("after add move", self.board_y, self.board_x, letter, self.on_board)
+            #print(self.bTiles)
         else:
             self.on_board = False
             print("tile status =", self.on_board)
@@ -80,6 +80,8 @@ class Tile:
         """Moves the tile back to the rack."""
         self.on_board = False
         print("back to rack")
+        raise Exception("Rerack needed")
+
 
 class Player:
     '''
@@ -319,10 +321,13 @@ class GameState:  # Loads everything necessary and starts the game.
             for i, letter in enumerate(self.scrabble.get_rack()):
                 self.player_tiles.append(Tile(letter, self.scrabble))  # self.resourceManagement.board_tiles[self.rackList[i]])
 
+            # Clear the current move's tile list
+            self.currentMove.m.clear()  # Add this line here
+
             #word = [tile.letter for tile in self.game_tiles]
             #print("printing self.game tiles", self.game_tiles)
             #print("Your word is:", ''.join(word))  # prints tile rack rather than submitted tiles because all r set to true in move class
         else:
             # Invalid turn, return all tiles to rack
             for tileTest in self.player_tiles:
-                self.return_tiles_to_rack()
+                self.Tile.rerack()

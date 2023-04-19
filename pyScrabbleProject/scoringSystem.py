@@ -82,33 +82,15 @@ WORD_MULTIPLIERS = {
     (14, 14): 3,
 }
 
-
-class WordList:
-    def __init__(self, fn):
-        self.words = []
-        with open(fn) as f:
-            for line in f.readlines():
-                self.words.append(line.rstrip().upper())
-
-    def isValid(self, word):
-        '''
-        isValid(word)
-        Uses a binary search to check if the word exists in the
-        array.
-        '''
-        if word == '': return False
-
-        word = word.upper()
-        first, last = 0, len(self.words)
-        while first != last:
-            mid = (first + last) // 2
-            if word == self.words[mid]:
-                return True
-            elif word > self.words[mid]:
-                first = mid + 1
-            elif word < self.words[mid]:
-                last = mid
-        return False
+PLAYER_TILE_POSITIONS = [
+    (0, 750), #positioning of rack tiles
+    (50, 750),
+    (100, 750),
+    (150, 750),
+    (200, 750),
+    (250, 750),
+    (300, 750),
+]
 
 
 def letterScore(letter):
