@@ -6,17 +6,45 @@ from board import ScrabbleBoard as SB
 import player
 import deck
 import pygame
+from scoringSystem import *
 
 import scrabble
 from scrabble import Scrabble
 
 
-class Tile:
-    def __init__(self, letter, SBoardInstance):
+# The rest is code where you implement your game using the Scenes model
+def tile_to_pixel(x, y):
+    """
+    Takes an x, y coordinate of the board and translates into the
+    corresponding pixel coordinate.
+
+    Note: 0, 0 is top left of board.
+    """
+    pixel_x = 2 + 50*x
+    pixel_y = 2 + 50*y
+    return pixel_x, pixel_y
+
+
+def pixel_to_tile(x, y):
+    """
+    Takes an x, y coordinate of the cursor and translates into the
+    corresponding tile coordinate.
+    """
+    tile_x = (x - 2)//50
+    tile_y = (y - 2)//50
+    return tile_x, tile_y
+
+class Tile(pygame.sprite.Sprite):
+    def __init__(self, letter, SBoardInstance, spritesheet, location):
+        pygame.sprite.Sprite.__init__(self)
+        self.tileBlock = spritesheet.imageFrom(LETTER_COORDINATES[letter])
         self.letter = letter
         self.board_x = None
         self.board_y = None
-        self.on_board = True  # changed to true and printed a bunch of stuff
+        self.rect = self.tileBlock.get_rect()
+        self.rect.left, self.rect.top = location
+        self.tray_position = location
+        self.on_board = False  # changed to true and printed a bunch of stuff
         self.m = []
         self.UsedLetters = []
         self.SBoardInstance = SBoardInstance
