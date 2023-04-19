@@ -34,6 +34,7 @@ def pixel_to_tile(x, y):
     tile_y = (y - 2)//50
     return tile_x, tile_y
 
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, letter, SBoardInstance, spritesheet, location):
         pygame.sprite.Sprite.__init__(self)
