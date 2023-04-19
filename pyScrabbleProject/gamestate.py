@@ -1,6 +1,6 @@
 import sys
 
-from LettersSpritesheet import SpriteSheet as LS
+from LettersSpritesheet import SpriteSheet
 import resourceFile
 from board import ScrabbleBoard as SB
 import player
@@ -128,7 +128,8 @@ class Player:
         self.scrabbleInstance = scrabbleInstance
         self.scrabble = scrabbleInstance
         self.position = position
-        self.currentMove = Tile(letter=True, SBoardInstance=self.scrabble)
+        self.letterTiles = SpriteSheet("resources/images/LetterSprite.png")
+        self.currentMove = Tile(letter=True, SBoardInstance=self.scrabble, location=PLAYER_TILE_POSITIONS, spritesheet=self.letterTiles)
         self.size = (7 * resourceFile.Tile_Size[0],
                      resourceFile.Tile_Size[1])
         self.rect = pygame.Rect(self.position, self.size)
@@ -219,7 +220,7 @@ class GameState:  # Loads everything necessary and starts the game.
         self.ai = ai
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
-        self.letterTiles = LS('mf314\pyScrabbleProject/resources/images/LetterSprite.png')
+        self.letterTiles = SpriteSheet("resources/images/LetterSprite.png")
         self.p1 = Player((0, 750), self.scrabble)
         #self.p2 = player.Player((0, 750), self.scrabble)
         self.deck = deck.Deck()
@@ -240,7 +241,7 @@ class GameState:  # Loads everything necessary and starts the game.
         self.p1.deck_draw(self.deck, 7)
         #self.p2.deck_draw(self.deck, 7)
 
-        self.currentMove = Tile(letter, self.scrabble)
+        self.currentMove = Tile(letter, self.scrabble, self.letterTiles, PLAYER_TILE_POSITIONS )
 
     def handle_event(self, evt):
         if evt.type == pygame.MOUSEBUTTONUP:
