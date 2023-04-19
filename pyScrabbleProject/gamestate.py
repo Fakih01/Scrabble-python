@@ -71,15 +71,112 @@ class Tile:
         self.on_board = False
         return rem[2]
 
-    def tileTest(self):
+    def tile(self):
         """Returns the tuple (board_x, board_y, letter)."""
-        print(f"printing from TileTest: board_x={self.board_x}, board_y={self.board_y}, letter={self.letter}")
+        print(f"printing from tile function: board_x={self.board_x}, board_y={self.board_y}, letter={self.letter}")
         return self.board_x, self.board_y, self.letter
 
-    def rerackTest(self):
+    def rerack(self):
         """Moves the tile back to the rack."""
         self.on_board = False
         print("back to rack")
+
+class Player:
+    '''
+    A representation of the player, complete with current score and hand.
+    Should only draw the player's own hand, and not the current move.
+    '''
+
+    def __init__(self, position, scrabbleInstance):
+        '''
+        initialises score and hand.
+        hand should only have characters (max size 7).
+        '''
+        self.scrabbleInstance = scrabbleInstance
+        self.scrabble = scrabbleInstance
+        self.position = position
+        self.currentMove = Tile(letter=True, SBoardInstance=self.scrabble)
+        self.size = (7 * resourceFile.Tile_Size[0],
+                     resourceFile.Tile_Size[1])
+        self.rect = pygame.Rect(self.position, self.size)
+        rack = self.scrabble._player_rack
+        self.rackList = list(rack)
+
+    def __contains__(self, position):
+        '''
+        Returns true if point is inside player hand rectangle, and false if
+        otherwise.
+        Uses pygame Rect.collidepoint method to compact code.
+        '''
+        return self.rect.collidepoint(position)
+
+    def get_tile_pos(self, position):
+        '''
+        Returns the index of the tile, if it exists at position pos.
+        Otherwise, return -1. Assumes that the position is already in the player
+        hand.
+        '''
+        # Normalize the position
+        position[0] -= self.position[0]
+
+        ind = position[0] // resourceFile.Tile_Size[0]
+        if ind < len(self.scrabble._player_rack):
+            print("this is in position", ind)  # positioning of tile from hand
+            return ind
+
+        else:
+            return -1
+
+    def get_tile(self, position):
+        '''
+        Returns a single character from the position from hand.
+        If the character doesn't exist, raises an exception.
+        '''
+        ind = self.get_tile_pos(position)
+
+        if ind == -1:
+            raise Exception("error: that isn't a tile")
+
+        t = self.scrabble._player_rack[ind]
+        print("this is the letter", t, "at position:", ind)
+        return t
+
+    def deck_draw(self, deck, n):
+        '''
+        Draws n tiles from deck   # might not be needed as have the function in scrabble.py
+        '''
+        print("deck_draw", self.scrabble._player_rack)
+        #self.rackList.extend(deck.take(n))  #not acc drawing any tiles
+
+    def get_the_rack(self):
+        """
+        Returns a copy of the player's rack
+        """
+        print("get_the_rack called", self.scrabble._player_rack)  # trying
+        print("Now we need a new rack. fix it.")
+        return self.scrabble._player_rack
+
+    def deck_exchange(self, deck, l):
+        '''
+        Exchanges tiles in hand (list l) with random tiles in deck.
+        First checks to see that the list is a subset of hand.
+        '''
+        if not all(map(lambda i: i in self.rackList, l)):
+            raise Exception("error: cannot exchange non-existent board_tiles")
+
+        deck.place(l)
+
+        for i in l:
+            self.rackList.remove(i)
+
+    def drawHand(self, scrn, resourceManagement, position):
+        '''
+        Draws player's hand
+        '''
+        for i in range(len(self.scrabble._player_rack)):
+            scrn.blit(resourceManagement.board_tiles[self.scrabble._player_rack[i]],
+                      (position[0] + resourceFile.Tile_Size[0] * i,
+                       position[1]))
 
 
 class GameState:  # Loads everything necessary and starts the game.
@@ -89,21 +186,22 @@ class GameState:  # Loads everything necessary and starts the game.
         self.ai = ai
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
-        self.p1 = player.Player((0, 750), self.scrabble)
-        self.p2 = player.Player((0, 750), self.scrabble)
+        self.p1 = Player((0, 750), self.scrabble)
+        #self.p2 = player.Player((0, 750), self.scrabble)
         self.deck = deck.Deck()
-        self.turn = "1"             # Player 1 always goes first
+        #self.turn = "1"             # Player 1 always goes first
         self.selectedTile = None    # Selected tile should be a letter only
         self.player_tiles = []
         self.game_tiles = []
+        self.current_move = False
 
         for i, letter in enumerate(self.scrabble.get_rack()):
-            tilee = Tile(letter, self.scrabble)
-            self.player_tiles.append(tilee)  # section not fully working
+            tileObject = Tile(letter, self.scrabble)
+            self.player_tiles.append(tileObject)  # section not fully working
             #clean up print("for i loop rack =", [self.rackList])
 
         # Place players into dictionary for less if-statements
-        self.gs = {"1": self.p1, "2": self.p2}
+        #self.gs = {"1": self.p1, "2": self.p2}
 
         # First, draw 7 tiles
         self.p1.deck_draw(self.deck, 7)
@@ -111,126 +209,73 @@ class GameState:  # Loads everything necessary and starts the game.
 
         self.currentMove = Tile(letter, self.scrabble)
 
-    def handle(self, evt):
-        '''
-        Handles all events passed into the state.
-        '''
+    def handle_event(self, evt):
         if evt.type == pygame.MOUSEBUTTONUP:
             position = list(pygame.mouse.get_pos())
             if position in self.board:
+                ind = self.board.get_tile_pos(position)
                 if self.selectedTile is None:
-                    # Removes selected tile from board, and thus, from moveset
-                    self.handle_board_removal(position)
+                    # Handles the removal of tile
+                    try:
+                        l = self.currentMove.remove_move(*ind)
+                        self.selectedTile = l
+                    except:
+                        return
                 else:
-                    # Places selected tile into moveset, and thus, places tile
-                    # onto board
-                    self.handle_board_place(position)
+                    # Handles the placing of the selected tile onto the board
+                    if self.board.board_tiles[ind[0]][ind[1]] is None:
+                        try:
+                            self.currentMove.add_move(ind[0], ind[1], self.selectedTile)
+                            self.selectedTile = None
+                        except:
+                            self.scrabble._player_rack.append(self.selectedTile)
+                            self.selectedTile = None
 
-            elif position in self.gs[self.turn]:
+            elif position in self.p1:
+                ind = self.p1.get_tile_pos(position)
                 if self.selectedTile is None:
-                    # Select tile, and remove from correct hand
-                    self.handle_hand_select(position)
+                    # Handles the tile selection and removal
+                    try:
+                        self.selectedTile = self.p1.get_tile(position)
+                        self.scrabble._player_rack.remove(self.selectedTile)
+                    except:
+                        return
                 else:
-                    # Replaces removed tile from hand
-                    self.handle_hand_replace(position)
-        if evt.type == pygame.KEYDOWN:  # right place?
+                    # Handles the replacing of selected tile into hand
+                    if ind == -1:
+                        self.scrabble._player_rack.append(self.selectedTile)
+                    else:
+                        self.scrabble._player_rack.insert(ind, self.selectedTile)
+                    self.selectedTile = None
+
+        if evt.type == pygame.KEYDOWN:
             if evt.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
-            elif evt.key == pygame.K_RETURN:  # move is submitted here
+            elif evt.key == pygame.K_RETURN:
                 self._submit_turn()
-
-            elif evt.key == pygame.K_p:  #prints board when p is pressed
+            elif evt.key == pygame.K_p:
                 self.scrabble._print_board()
 
-    def handle_board_removal(self, position):
-        '''
-        Handles the removal of tile. If the tile isn't in the current moveset,
-        don't remove anything. Because that is cheating.'''
-        ind = self.board.get_tile_pos(position)
-
-        try:
-            l = self.gs[self.turn].currentMove.remove_move(*ind)
-            self.selectedTile = l
-        except:
-            return
-
-    def handle_board_place(self, position):
-        '''
-        Handles the placing of the selected tile onto the board. Assumes that
-        there is already a selected tile.
-        '''
-        ind = self.board.get_tile_pos(position)
-        #print("board tiles" ,self.board.board_tiles)
-
-        if self.board.board_tiles[ind[0]][ind[1]] is None:
-            try:
-                # Stops people from trying to place tiles on a non-empty tile
-                # that is in move set (it throws a nasty little error when it
-                # does).
-                self.gs[self.turn].currentMove.add_move(ind[0], ind[1], self.selectedTile)
-                self.selectedTile = None
-            except:
-                self.gs[self.turn].scrabble._player_rack.append(self.selectedTile)  # add selected tile back to rack
-                self.selectedTile = None
-            '''Works because the print statement is called and add move is functioning meaning the tiles are appended
-            to the board_tiles list 
-            so nxt step should involve the reading of these tiles before validating them'''
-
-    def handle_hand_replace(self, position):
-        '''
-        Handles the replacing of selected tile into hand.
-        '''
-        # Gets the tile index, if any
-        ind = self.gs[self.turn].get_tile_pos(position)
-
-        # Places tile into hand
-        if ind == -1:
-            self.gs[self.turn].scrabble._player_rack.append(self.selectedTile)
-        else:
-            self.gs[self.turn].scrabble._player_rack.insert(ind, self.selectedTile)
-
-        # Removes selected tile
-        self.selectedTile = None
-
-    def handle_hand_select(self, position):
-        '''
-        Handles the tile selection and removal (from the corresponding hand, of
-        course).
-        '''
-        # Grab tile from hand and place into tile selection
-        try:
-            self.selectedTile = self.gs[self.turn].get_tile(position)
-        except:
-            return
-
-        # Removes tile from hand
-        #self.gs[self.turn].scrabble._player_rack.remove(self.selectedTile)  # updates list by removing(surely counts as currentmove?)
-        print(self.gs[self.turn].scrabble._player_rack)
-
     def draw(self, scrn):
-        '''
-        Draws the state onto the screen scrn.
-        '''
-        self.board.draw(scrn, self.gs[self.turn].currentMove)
-        player_position = (0, 750)
-        if self.turn == "1":
-            self.p1.drawHand(scrn, self.resourceManagement, player_position)
-        else:
-            self.p2.drawHand(scrn, self.resourceManagement, player_position)
+        self.board.draw(scrn, self.currentMove)
+        playerRack_position = (0, 750)
+
+
+        self.p1.drawHand(scrn, self.resourceManagement, playerRack_position)
+
 
         if self.selectedTile is not None:
-            # Tile is selected and should hang onto the mouse
             x, y = pygame.mouse.get_pos()
             scrn.blit(self.resourceManagement.board_tiles[self.selectedTile],
                       (x - resourceFile.Tile_Size[0] / 2,
                        y - resourceFile.Tile_Size[1] / 2))
 
     def return_tiles_to_rack(self):
-        for x, y, letter in self.gs[self.turn].currentMove.m:
-            self.gs[self.turn].scrabble._player_rack.append(letter)
+        for x, y, letter in self.currentMove.m:
+            self.scrabble._player_rack.append(letter)
             self.board.board_tiles[x][y] = None
-        self.gs[self.turn].currentMove.m.clear()
+        self.currentMove.m.clear()
 
     def update(self, delta):
         '''
@@ -248,7 +293,7 @@ class GameState:  # Loads everything necessary and starts the game.
 
         # Get a list of tiles that will be submitted
         tileList = []
-        for x, y, letter in self.gs[self.turn].currentMove.m:  # Use currentMove.m to get the updated coordinates
+        for x, y, letter in self.currentMove.m:  # Use currentMove.m to get the updated coordinates
             tile_info = (x, y, letter)
             print("Tile info:", tile_info)
             tileList.append(tile_info)
@@ -260,17 +305,18 @@ class GameState:  # Loads everything necessary and starts the game.
 
         if self.scrabble.submit_turn(tileList):
             for x, y, letter in tileList:
-                if letter in self.gs[self.turn].scrabble._player_rack:
-                    self.gs[self.turn].scrabble._player_rack.remove(letter)
+                if letter in self.scrabble._player_rack:
+                    self.scrabble._player_rack.remove(letter)
             # Valid turn, move all played tiles to game.
             for tileTest in self.player_tiles:
                 if tileTest.on_board:
                     self.game_tiles.append(tileTest)
                     tileTest.submitted = True
 
+
             # Update the player tiles
             self.player_tiles = []
-            for i, letter in enumerate(self.gs[self.turn].get_the_rack()):
+            for i, letter in enumerate(self.scrabble.get_rack()):
                 self.player_tiles.append(Tile(letter, self.scrabble))  # self.resourceManagement.board_tiles[self.rackList[i]])
 
             #word = [tile.letter for tile in self.game_tiles]

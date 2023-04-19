@@ -28,7 +28,7 @@ class ScrabbleGame:
                 if evt.type == pygame.QUIT:
                     running = False
                 else:
-                    currentState.handle(evt)  # here's where it directs to the handle function in gamestate!!!!!!!
+                    currentState.handle_event(evt)  # here's where it directs to the handle function in gamestate!!!!!!!
 
             # Draws state
             screen.fill((0, 0, 0))
