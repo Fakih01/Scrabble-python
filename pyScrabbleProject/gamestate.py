@@ -52,10 +52,10 @@ class Tile(pygame.sprite.Sprite):
         self.bTiles = SBoardInstance.SBoard
         self.submitted = False
 
-    def add_move(self, x, y, letter):
+    def add_move(self, x, y, letter, pos):
         print("add move is called in move class originating from gs class")  # works
         # Appends word onto move array and checks for letters that are in the same position.
-
+        tile_x, tile_y = pixel_to_tile(*pos)
         for i, j, l in self.m:
             if i == x and j == y:
                 print("error: attempt to place letter in same position")
@@ -70,6 +70,7 @@ class Tile(pygame.sprite.Sprite):
             self.on_board = True
             self.board_x = x  # now is updating
             self.board_y = y  # same
+            self.rect.topleft = tile_to_pixel(tile_x, tile_y)
             print("tile status= ", self.on_board)
             self.UsedLetters.append(letter)
             word = ''.join(self.UsedLetters)
@@ -80,6 +81,7 @@ class Tile(pygame.sprite.Sprite):
             #print(self.bTiles)
         else:
             self.on_board = False
+            self.rect.topleft = self.tray_position
             print("tile status =", self.on_board)
             raise Exception("not on board")
 
@@ -108,8 +110,8 @@ class Tile(pygame.sprite.Sprite):
     def rerack(self):
         """Moves the tile back to the rack."""
         self.on_board = False
+        self.rect.topleft = self.tray_position
         print("back to rack")
-        raise Exception("Rerack needed")
 
 
 class Player:
@@ -217,6 +219,7 @@ class GameState:  # Loads everything necessary and starts the game.
         self.ai = ai
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
+        self.letterTiles = Spritesheet('images/LetterSprite.png')
         self.p1 = Player((0, 750), self.scrabble)
         #self.p2 = player.Player((0, 750), self.scrabble)
         self.deck = deck.Deck()
@@ -358,5 +361,5 @@ class GameState:  # Loads everything necessary and starts the game.
             #print("Your word is:", ''.join(word))  # prints tile rack rather than submitted tiles because all r set to true in move class
         else:
             # Invalid turn, return all tiles to rack
-            for tileTest in self.player_tiles:
-                self.Tile.rerack()
+            for tile in self.player_tiles:
+                self.tile.rerack()
