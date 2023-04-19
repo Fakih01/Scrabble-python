@@ -129,7 +129,6 @@ class Player:
         self.scrabble = scrabbleInstance
         self.position = position
         self.letterTiles = SpriteSheet("resources/images/LetterSprite.png")
-        self.currentMove = Tile(letter=True, SBoardInstance=self.scrabble, location=PLAYER_TILE_POSITIONS, spritesheet=self.letterTiles)
         self.size = (7 * resourceFile.Tile_Size[0],
                      resourceFile.Tile_Size[1])
         self.rect = pygame.Rect(self.position, self.size)
