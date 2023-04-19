@@ -1,6 +1,6 @@
 import sys
 
-import scrabble
+from LettersSpritesheet import SpriteSheet as LS
 import resourceFile
 from board import ScrabbleBoard as SB
 import player
@@ -38,7 +38,7 @@ def pixel_to_tile(x, y):
 class Tile(pygame.sprite.Sprite):
     def __init__(self, letter, SBoardInstance, spritesheet, location):
         pygame.sprite.Sprite.__init__(self)
-        self.tileBlock = spritesheet.imageFrom(LETTER_COORDINATES[letter])
+        self.tileBlock = spritesheet.get_images(LETTER_COORDINATES[letter])
         self.letter = letter
         self.board_x = None
         self.board_y = None
@@ -219,7 +219,7 @@ class GameState:  # Loads everything necessary and starts the game.
         self.ai = ai
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
-        self.letterTiles = Spritesheet('images/LetterSprite.png')
+        self.letterTiles = LS('mf314\pyScrabbleProject/resources/images/LetterSprite.png')
         self.p1 = Player((0, 750), self.scrabble)
         #self.p2 = player.Player((0, 750), self.scrabble)
         self.deck = deck.Deck()
@@ -227,10 +227,9 @@ class GameState:  # Loads everything necessary and starts the game.
         self.selectedTile = None    # Selected tile should be a letter only
         self.player_tiles = []
         self.game_tiles = []
-        self.current_move = False
 
         for i, letter in enumerate(self.scrabble.get_rack()):
-            tileObject = Tile(letter, self.scrabble)
+            tileObject = Tile(letter, self.scrabble, self.letterTiles, PLAYER_TILE_POSITIONS)
             self.player_tiles.append(tileObject)  # section not fully working
             #clean up print("for i loop rack =", [self.rackList])
 
