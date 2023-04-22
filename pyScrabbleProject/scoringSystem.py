@@ -114,13 +114,13 @@ WORD_MULTIPLIERS = {
 }
 
 PLAYER_TILE_POSITIONS = [
-    (0, 750), #positioning of rack tiles
+    (1, 750), #positioning of rack tiles
     (50, 750),
-    (100, 750),
-    (150, 750),
-    (200, 750),
-    (250, 750),
-    (300, 750),
+    (99, 750),
+    (148, 750),
+    (197, 750),
+    (246, 750),
+    (295, 750),
 ]
 
 

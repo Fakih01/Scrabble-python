@@ -38,7 +38,7 @@ def pixel_to_tile(x, y):
 class Tile(pygame.sprite.Sprite):
     def __init__(self, letter, SBoardInstance, spritesheet, location):
         pygame.sprite.Sprite.__init__(self)
-        self.tileBlock = spritesheet.get_images(LETTER_COORDINATES[letter])
+        self.tileBlock = spritesheet.image_at(LETTER_COORDINATES[letter])
         self.letter = letter
         self.board_x = None
         self.board_y = None
@@ -206,10 +206,15 @@ class Player:
         '''
         Draws player's hand
         '''
-        for i in range(len(self.scrabble._player_rack)):
-            scrn.blit(resourceManagement.board_tiles[self.scrabble._player_rack[i]],
-                      (position[0] + resourceFile.Tile_Size[0] * i,
-                       position[1]))
+        for tile in self.player_tiles:
+            scrn.blit(tile.image, tile.rect)
+
+        for tile in self.game_tiles:
+            scrn.blit(tile.image, tile.rect)
+
+        # Make selected tile on top
+        if self.selected_tile:
+            scrn.blit(self.selected_tile.image, self.selected_tile.rect)
 
 
 class GameState:  # Loads everything necessary and starts the game.
@@ -219,7 +224,7 @@ class GameState:  # Loads everything necessary and starts the game.
         self.ai = ai
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
-        self.letterTiles = SpriteSheet("resources/images/LetterSprite.png")
+        self.letterTiles = SpriteSheet('resources/images/LetterSprite.png')
         self.p1 = Player((0, 750), self.scrabble)
         #self.p2 = player.Player((0, 750), self.scrabble)
         self.deck = deck.Deck()
@@ -229,8 +234,7 @@ class GameState:  # Loads everything necessary and starts the game.
         self.game_tiles = []
 
         for i, letter in enumerate(self.scrabble.get_rack()):
-            tileObject = Tile(letter, self.scrabble, self.letterTiles, PLAYER_TILE_POSITIONS)
-            self.player_tiles.append(tileObject)  # section not fully working
+            self.player_tiles.append(Tile(letter, self.scrabble, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
             #clean up print("for i loop rack =", [self.rackList])
 
         # Place players into dictionary for less if-statements
@@ -240,7 +244,21 @@ class GameState:  # Loads everything necessary and starts the game.
         self.p1.deck_draw(self.deck, 7)
         #self.p2.deck_draw(self.deck, 7)
 
-        self.currentMove = Tile(letter, self.scrabble, self.letterTiles, PLAYER_TILE_POSITIONS )
+        self.currentMove = Tile(letter, self.scrabble, self.letterTiles, PLAYER_TILE_POSITIONS[i])
+
+    def NewdrawHand(self, scrn):
+        '''
+        Draws player's hand
+        '''
+        for tile in self.player_tiles:
+            scrn.blit(tile.tileBlock, tile.rect)
+
+        for tile in self.game_tiles:
+            scrn.blit(tile.tileBlock, tile.rect)
+
+        # Make selected tile on top
+        #if self.selectedTile:
+            #scrn.blit(self.selectedTile.tileBlock, self.selectedTile.rect)
 
     def handle_event(self, evt):
         if evt.type == pygame.MOUSEBUTTONUP:
@@ -295,7 +313,7 @@ class GameState:  # Loads everything necessary and starts the game.
         playerRack_position = (0, 750)
 
 
-        self.p1.drawHand(scrn, self.resourceManagement, playerRack_position)
+        self.NewdrawHand(scrn)
 
 
         if self.selectedTile is not None:
