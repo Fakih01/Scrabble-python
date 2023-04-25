@@ -123,7 +123,6 @@ class Scrabble:
 
         # Reset score accumulation
         self._turn_score = 0
-        self._move_count +=1
 
         return (
             self._all_letters_from_rack(letters) and
