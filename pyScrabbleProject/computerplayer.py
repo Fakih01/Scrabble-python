@@ -1,12 +1,11 @@
 import sys
-
 from LettersSpritesheet import SpriteSheet
-import resourceFile
 from board import ScrabbleBoard as SB
 import deck
 import pygame
 from scoringSystem import *
 from scrabble import Scrabble
+import twl
 
 
 # The rest is code where you implement your game using the Scenes model
