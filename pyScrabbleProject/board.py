@@ -368,7 +368,7 @@ class ScrabbleBoard:
         if self.board_tiles[x][y] is not None:
             raise Exception("error: tile exists")
 
-        self.board_tiles[x][y] = tile.tileCheck(letter)
+        self.board_tiles[x][y] = tileModule.tileCheck(letter)
 
     def take_back(self, position):
         '''

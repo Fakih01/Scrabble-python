@@ -19,6 +19,7 @@ class Scrabble:
         self._draw_tiles(7)
         self._player_score = 0
         self.rackList = list(self._player_rack)
+        self.total_score = 0
 
     def _print_board(self):  #  prints board when p is pressed
         """
@@ -138,13 +139,12 @@ class Scrabble:
         """
         Determines if all letters are present in the player's rack.
         """
-        rack = self.rackList
-        temp_rack = list(rack)  # Create a temporary copy of the player's rack
+        rack = self._player_rack[:]
         print("Checking rack:", rack)  # Debugging line
         print("Checking letters:", letters)  # Debugging line
         for letter in letters:
-            if letter in temp_rack:
-                temp_rack.remove(letter)
+            if letter in rack:
+                rack.remove(letter)
             else:
                 if self.debug:
                     print("Validation: Not all letters are from the rack")
@@ -423,10 +423,8 @@ class Scrabble:
         """
         Removed the letters from the player rack and draw new ones.
         """
-        print("Updating player rack")  # Debugging line
-        for letter in tiles:
-            if letter in self._player_rack:
-                self._player_rack.remove(letter)
+        for _, _, letter in tiles:
+            self._player_rack.remove(letter)
 
         self._draw_tiles(len(tiles))
         print("updated rack should be", self._player_rack)
@@ -448,12 +446,13 @@ class Scrabble:
                     score += POINTS[self.SBoard[row][col]]
 
         self._turn_score += score*multiplier
+        print("Score for this word is:", self._turn_score)
 
     def _score_turn(self, tiles):
         """
         Applies the score of the last validated move to the player score.
         """
-        self._player_score = self._turn_score
+        self.total_score = self._turn_score + self._player_score
         # Check for Bingo
         if len(tiles) == 7:
             self._player_score += 50
@@ -461,7 +460,14 @@ class Scrabble:
         self._turn_score = 0
 
         if self.debug:
-            print("Score:", self._player_score)
+            print("Total score:", self.total_score)
+
+    def get_total_score(self):
+        #print("Total score is: ", self._player_score)
+        return self.total_score
+
+    def total_game_score(self):
+        print()
 
 
 def test():

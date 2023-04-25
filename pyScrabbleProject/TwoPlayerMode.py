@@ -112,7 +112,16 @@ class Tile(pygame.sprite.Sprite):
         print(self.letter, "back to rack")
 
 
-class GameState:  # Loads everything necessary and starts the game.
+class Player:
+    def __init__(self, player_id, scrabble_instance, letter_tiles):
+        self.player_id = player_id
+        self.scrabble = scrabble_instance
+        self.letterTiles = letter_tiles
+        self.player_tiles = []
+        self.game_tiles = []
+
+
+class TwoPlayerGame:  # Loads everything necessary and starts the game.
     def __init__(self, resourceManagement, ai=False):
         self.rackList = []
         self.scrabble = Scrabble(True)
@@ -124,9 +133,16 @@ class GameState:  # Loads everything necessary and starts the game.
         self.selectedTile = None    # Selected tile should be a letter only
         self.player_tiles = []
         self.game_tiles = []
+        # Initialize two players
+        self.players = {}
+        self.players[1] = Player(1, Scrabble(True), self.letterTiles)
+        self.players[2] = Player(2, Scrabble(True), self.letterTiles)
+        self.currentPlayer = 1
 
-        for i, letter in enumerate(self.scrabble.get_rack()):
-            self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
+        # Update the initial tiles for both players
+        for player_id, player in self.players.items():
+            for i, letter in enumerate(player.scrabble.get_rack()):
+                player.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
         self.currentMove = Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i])
 
@@ -134,7 +150,8 @@ class GameState:  # Loads everything necessary and starts the game.
         '''
         Draws player's hand
         '''
-        for tile in self.player_tiles:
+        currentPlayer = self.players[self.currentPlayer]
+        for tile in currentPlayer.player_tiles:
             scrn.blit(tile.tileBlock, tile.rect)
 
         for tile in self.game_tiles:
@@ -146,6 +163,7 @@ class GameState:  # Loads everything necessary and starts the game.
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
     def handle_event(self, evt):
+        currentPlayer = self.players[self.currentPlayer]
         if evt.type == pygame.MOUSEBUTTONUP:
             position = list(pygame.mouse.get_pos())
             if position in self.board:
@@ -161,7 +179,7 @@ class GameState:  # Loads everything necessary and starts the game.
                         self.selectedTile = None
         elif evt.type == pygame.MOUSEBUTTONDOWN:
             if evt.button == 1:
-                for tile in self.player_tiles:
+                for tile in currentPlayer.player_tiles:
                     if tile.rect.collidepoint(evt.pos):
                         self.selectedTile = tile
                         mouse_x, mouse_y = evt.pos
@@ -189,11 +207,15 @@ class GameState:  # Loads everything necessary and starts the game.
 
     # Add a method to render the score
     def render_score(self, scrn):
-        score = self.scrabble.get_total_score()
-        score_text = f"Score: {score}"
-        font = pygame.font.Font('freesansbold.ttf', 32)
-        score_surface = font.render(score_text, True, (255, 255, 255))
-        scrn.blit(score_surface, (800, 50))
+        p1_score = self.players[1].scrabble.get_total_score()
+        p2_score = self.players[2].scrabble.get_total_score()
+        p1_score_text = f"Player 1 Score: {p1_score}"
+        p2_score_text = f"Player 2 Score: {p2_score}"
+        font = pygame.font.Font('freesansbold.ttf', 15)
+        p1_score_surface = font.render(p1_score_text, True, (255, 255, 255))
+        p2_score_surface = font.render(p2_score_text, True, (255, 255, 255))
+        scrn.blit(p1_score_surface, (770, 50))
+        scrn.blit(p2_score_surface, (770, 80))
 
     def draw(self, scrn):
         self.board.draw(scrn, self.currentMove)
@@ -229,10 +251,10 @@ class GameState:  # Loads everything necessary and starts the game.
         """
         print("move submitted")  # player.submit_move(self, self.board)  # currently broken
         #  print("Your word is", self.player_tiles)  # word isn't rly printing rn
-
+        currentPlayer = self.players[self.currentPlayer]
         # Get a list of tiles that will be submitted
         tileList = []
-        for tile in self.player_tiles:
+        for tile in currentPlayer.player_tiles:
             if tile.on_board:
                 tileList.append(tile.tile())
 
@@ -240,18 +262,21 @@ class GameState:  # Loads everything necessary and starts the game.
         if len(tileList) == 0:
             return
 
-        if self.scrabble.submit_turn(tileList):
+        if currentPlayer.scrabble.submit_turn(tileList):
             # Valid turn, move all played tiles to game.
-            for tile in self.player_tiles:
+            for tile in currentPlayer.player_tiles:
                 if tile.on_board:
                     self.game_tiles.append(tile)
 
             # Update the player tiles
-            self.player_tiles = []
-            for i, letter in enumerate(self.scrabble.get_rack()):
-                self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
+            currentPlayer.player_tiles = []
+            for i, letter in enumerate(currentPlayer.scrabble.get_rack()):
+                currentPlayer.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
+            # Switch to the other player
+            self.currentPlayer = 3 - self.currentPlayer
+            print("Player", self.currentPlayer, "'s turn!")
         else:
             # Invalid turn, return all tiles to rack
-            for tile in self.player_tiles:
+            for tile in currentPlayer.player_tiles:
                 tile.rerack()

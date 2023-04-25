@@ -1,6 +1,7 @@
 import pygame
 import gamestate as gs
 import resourceFile
+import TwoPlayerMode
 
 
 class ScrabbleGame:
@@ -19,6 +20,37 @@ class ScrabbleGame:
         clock = pygame.time.Clock()
         running = True
         currentState = gs.GameState(self.resourceManagement, ai)  # reference to the GameState class
+
+        pygame.display.set_caption("Scrabble Game")
+
+        while running:  # in game?
+            # Event handling
+            for evt in pygame.event.get():
+                if evt.type == pygame.QUIT:
+                    running = False
+                else:
+                    currentState.handle_event(evt)  # here's where it directs to the handle function in gamestate!!!!!!!
+
+            # Draws state
+            screen.fill((0, 0, 0))
+            currentState.draw(screen)
+            pygame.display.flip()
+
+            # Updating the state
+            currentState.update(clock.tick(60) / 1e3)
+
+        pygame.QUIT
+
+    def TwoPlayer(self, ai):  # Manages game states
+
+        # Constants
+        SIZE = (1000, 800)
+
+        # Variables
+        screen = pygame.display.set_mode(SIZE)
+        clock = pygame.time.Clock()
+        running = True
+        currentState = TwoPlayerMode.TwoPlayerGame(self.resourceManagement, ai)  # reference to the GameState class
 
         pygame.display.set_caption("Scrabble Game")
 
@@ -66,6 +98,10 @@ class StartPage(SceneBase):
                 # Move to the next scene when the user pressed Enter
                 self.SwitchToScene(game.play(False))
                 self.needs_update = True
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
+                # Move to the next scene when the user pressed Enter
+                self.SwitchToScene(game.TwoPlayer(False))
+                self.needs_update = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_h:
                 print("You have chosen help")
 
@@ -99,16 +135,22 @@ class StartPage(SceneBase):
         screen.blit(text, textRect)
 
         font2 = pygame.font.Font('freesansbold.ttf', 20)
-        text2 = font2.render('''Press 'Enter' to start the game''', True, black)
+        text2 = font2.render('''Press 'Enter' to start Single Player Mode''', True, black)
         textRect2 = text.get_rect()
-        textRect2.center = (X + 20, Y + 100)
+        textRect2.center = (X - 10, Y + 100)
         screen.blit(text2, textRect2)
 
-        font2 = pygame.font.Font('freesansbold.ttf', 17)
-        text3 = font2.render('''Press 'h' to visit the help page''', True, black)
+        font3 = pygame.font.Font('freesansbold.ttf', 17)
+        text3 = font3.render('''Press 'h' to visit the help page''', True, black)
         textRect3 = text.get_rect()
-        textRect3.center = (X + 55, Y + 150)
+        textRect3.center = (X + 55, Y + 250)
         screen.blit(text3, textRect3)
+
+        font4 = pygame.font.Font('freesansbold.ttf', 20)
+        text4 = font4.render('''Press '2' to start 2 player mode''', True, black)
+        textRect4 = text.get_rect()
+        textRect4.center = (X + 20, Y + 150)
+        screen.blit(text4, textRect4)
 
         pygame.display.set_caption("Scrabble Menu")
 
