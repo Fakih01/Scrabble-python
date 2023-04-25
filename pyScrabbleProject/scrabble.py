@@ -123,6 +123,7 @@ class Scrabble:
 
         # Reset score accumulation
         self._turn_score = 0
+        self._move_count +=1
 
         return (
             self._all_letters_from_rack(letters) and
@@ -450,7 +451,7 @@ class Scrabble:
         """
         Applies the score of the last validated move to the player score.
         """
-        self.total_score = self._turn_score + self._player_score
+        self._player_score += self._turn_score
         # Check for Bingo
         if len(tiles) == 7:
             self._player_score += 50
@@ -458,11 +459,11 @@ class Scrabble:
         self._turn_score = 0
 
         if self.debug:
-            print("Total score:", self.total_score)
+            print("Total score:", self._player_score)
 
     def get_total_score(self):
         #print("Total score is: ", self._player_score)
-        return self.total_score
+        return self._player_score
 
     def total_game_score(self):
         print()
