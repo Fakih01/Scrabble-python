@@ -121,7 +121,7 @@ class Player:
         self.game_tiles = []
 
 
-class TwoPlayerGame:  # Loads everything necessary and starts the game.
+class ComputerPlayer:  # Loads everything necessary and starts the game.
     def __init__(self, resourceManagement, ai=False):
         self.rackList = []
         self.scrabble = Scrabble(True)
@@ -207,15 +207,15 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
 
     # Add a method to render the score
     def render_score(self, scrn):
-        p1_score = self.players[1].scrabble.get_total_score()
-        p2_score = self.players[2].scrabble.get_total_score()
-        p1_score_text = f"Player 1 Score: {p1_score}"
-        p2_score_text = f"Player 2 Score: {p2_score}"
+        player_score = self.players[1].scrabble.get_total_score()
+        computer_score = self.players[2].scrabble.get_total_score()
+        player_score_text = f"Player Score: {player_score}"
+        computer_score_text = f"Computer Score: {computer_score}"
         font = pygame.font.Font('freesansbold.ttf', 15)
-        p1_score_surface = font.render(p1_score_text, True, (255, 255, 255))
-        p2_score_surface = font.render(p2_score_text, True, (255, 255, 255))
-        scrn.blit(p1_score_surface, (800, 80))
-        scrn.blit(p2_score_surface, (800, 100))
+        player_score_surface = font.render(player_score_text, True, (255, 255, 255))
+        computer_score_surface = font.render(computer_score_text, True, (255, 255, 255))
+        scrn.blit(player_score_surface, (800, 80))
+        scrn.blit(computer_score_surface, (800, 100))
 
     def render_turn(self, scrn):
         """Renders the text displaying the current player's turn."""
@@ -252,6 +252,21 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
                 return True
         return False
 
+    def generate_computer_move(self):
+        # You can use your own AI algorithm here to generate the best move for the computer.
+        # For simplicity, we'll just use the first available tile and place it on a random position on the board.
+
+        import random
+
+        currentPlayer = self.players[self.currentPlayer]
+        available_letters = currentPlayer.scrabble.get_rack()
+        letter_to_play = available_letters[0]
+
+        random_row = random.randint(0, 14)
+        random_col = random.randint(0, 14)
+
+        return [(random_row, random_col, letter_to_play)]
+
     def _submit_turn(self):
         """
         Submits the turn to the scrabble backend. Moves the player tiles to
@@ -262,31 +277,40 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         #  print("Your word is", self.player_tiles)  # word isn't rly printing rn
         currentPlayer = self.players[self.currentPlayer]
         # Get a list of tiles that will be submitted
-        tileList = []
-        for tile in currentPlayer.player_tiles:
-            if tile.on_board:
-                tileList.append(tile.tile())
-
-        # Not a turn if there's no tiles on board
-        if len(tileList) == 0:
-            return
-        if currentPlayer.scrabble.submit_turn(tileList):
-            # Valid turn, move all played tiles to game.
-            self.scrabble._move_count += 1
-            print("Move count=",self.scrabble._move_count)
+        # Check if the current player is the computer player (Player 2)
+        if self.currentPlayer == 2 and self.ai:
+            # Get the computer's move and update the board
+            tileList = self.generate_computer_move()
+            # Update the player_tiles to reflect the computer's move
+            for tile in tileList:
+                currentPlayer.player_tiles.remove(tile)
+                self.game_tiles.append(tile)
+        else:
+            tileList = []
             for tile in currentPlayer.player_tiles:
                 if tile.on_board:
-                    self.game_tiles.append(tile)
+                    tileList.append(tile.tile())
 
-            # Update the player tiles
-            currentPlayer.player_tiles = []
-            for i, letter in enumerate(currentPlayer.scrabble.get_rack()):
-                currentPlayer.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
+            # Not a turn if there's no tiles on board
+            if len(tileList) == 0:
+                return
+            if currentPlayer.scrabble.submit_turn(tileList):
+                # Valid turn, move all played tiles to game.
+                self.scrabble._move_count += 1
+                print("Move count=",self.scrabble._move_count)
+                for tile in currentPlayer.player_tiles:
+                    if tile.on_board:
+                        self.game_tiles.append(tile)
 
-            # Switch to the other player
-            self.currentPlayer = 3 - self.currentPlayer
-            print("Player", self.currentPlayer, "'s turn!")
-        else:
-            # Invalid turn, return all tiles to rack
-            for tile in currentPlayer.player_tiles:
-                tile.rerack()
+                # Update the player tiles
+                currentPlayer.player_tiles = []
+                for i, letter in enumerate(currentPlayer.scrabble.get_rack()):
+                    currentPlayer.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
+
+                # Switch to the other player
+                self.currentPlayer = 3 - self.currentPlayer
+                print("Player", self.currentPlayer, "'s turn!")
+            else:
+                # Invalid turn, return all tiles to rack
+                for tile in currentPlayer.player_tiles:
+                    tile.rerack()

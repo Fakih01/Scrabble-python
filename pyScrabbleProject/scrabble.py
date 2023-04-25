@@ -215,7 +215,7 @@ class Scrabble:
 
         if self._move_count == 0:
             ret = (7, 7) in places
-            if self.debug and ret == False:
+            if self.debug and ret == False and self._move_count < 1:
                 print("Validation: First move wasn't on star")
             return ret
         else:

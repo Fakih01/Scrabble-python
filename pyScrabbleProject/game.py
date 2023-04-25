@@ -2,6 +2,7 @@ import pygame
 import gamestate as gs
 import resourceFile
 import TwoPlayerMode
+import computerplayer
 
 
 class ScrabbleGame:
@@ -39,8 +40,6 @@ class ScrabbleGame:
             # Updating the state
             currentState.update(clock.tick(60) / 1e3)
 
-        pygame.QUIT
-
     def TwoPlayer(self, ai):  # Manages game states
 
         # Constants
@@ -50,7 +49,7 @@ class ScrabbleGame:
         screen = pygame.display.set_mode(SIZE)
         clock = pygame.time.Clock()
         running = True
-        currentState = TwoPlayerMode.TwoPlayerGame(self.resourceManagement, ai)  # reference to the GameState class
+        currentState = TwoPlayerMode.TwoPlayerGame(self.resourceManagement, ai)  # reference to the TP class
 
         pygame.display.set_caption("Scrabble Game")
 
@@ -70,7 +69,34 @@ class ScrabbleGame:
             # Updating the state
             currentState.update(clock.tick(60) / 1e3)
 
-        pygame.QUIT
+    def CompPlayer(self, ai):  # Manages game states
+
+        # Constants
+        SIZE = (1000, 800)
+
+        # Variables
+        screen = pygame.display.set_mode(SIZE)
+        clock = pygame.time.Clock()
+        running = True
+        currentState = computerplayer.ComputerPlayer(self.resourceManagement, ai)  # reference to the CP class
+
+        pygame.display.set_caption("Scrabble Game")
+
+        while running:  # in game?
+            # Event handling
+            for evt in pygame.event.get():
+                if evt.type == pygame.QUIT:
+                    running = False
+                else:
+                    currentState.handle_event(evt)  # here's where it directs to the handle function in gamestate!!!!!!!
+
+            # Draws state
+            screen.fill((0, 0, 0))
+            currentState.draw(screen)
+            pygame.display.flip()
+
+            # Updating the state
+            currentState.update(clock.tick(60) / 1e3)
 
 
 game = ScrabbleGame()
@@ -101,6 +127,10 @@ class StartPage(SceneBase):
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
                 # Move to the next scene when the user pressed Enter
                 self.SwitchToScene(game.TwoPlayer(False))
+                self.needs_update = True
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+                # Move to the next scene when the user pressed Enter
+                self.SwitchToScene(game.CompPlayer(False))
                 self.needs_update = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_h:
                 print("You have chosen help")
