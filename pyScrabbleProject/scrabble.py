@@ -1,9 +1,7 @@
 from random import shuffle
 
-import resourceFile
 from scoringSystem import *
 import twl
-import player
 
 
 class Scrabble:
