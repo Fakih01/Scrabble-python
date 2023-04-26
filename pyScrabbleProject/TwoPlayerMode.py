@@ -135,8 +135,8 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         self.game_tiles = []
         # Initialize two players
         self.players = {}
-        self.players[1] = Player(1, Scrabble(True), self.letterTiles)
-        self.players[2] = Player(2, Scrabble(True), self.letterTiles)
+        self.players[1] = Player(1, self.scrabble, self.letterTiles)
+        self.players[2] = Player(2, self.scrabble, self.letterTiles)
         self.currentPlayer = 1
 
         # Update the initial tiles for both players
