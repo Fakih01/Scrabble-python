@@ -5,6 +5,8 @@ import twl
 
 
 class Scrabble:
+    moveCount = 0
+    
     def __init__(self, debug):
         self.debug = debug
         self._populate_bag()
@@ -12,7 +14,6 @@ class Scrabble:
         self.SBoard = [
             [None]*15 for _ in range(15)
         ]
-        self._move_count = 0
         self._player_rack = []
         self._draw_tiles(7)
         self._player_score = 0
@@ -213,9 +214,9 @@ class Scrabble:
         """
         places = list(zip(rows, cols))
 
-        if self._move_count == 0:
+        if Scrabble.moveCount == 0:
             ret = (7, 7) in places
-            if self.debug and ret == False and self._move_count < 1:
+            if self.debug and ret == False and Scrabble.moveCount < 1:
                 print("Validation: First move wasn't on star")
             return ret
         else:
@@ -413,7 +414,8 @@ class Scrabble:
         """
         Given a valid set of tiles, adds them to the board.
         """
-        self._move_count += 1
+        Scrabble.moveCount += 1
+        print("Move count=", Scrabble.moveCount)
         for row, col, letter in tiles:
             self.SBoard[row][col] = letter
 

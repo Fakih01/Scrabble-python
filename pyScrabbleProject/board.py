@@ -18,7 +18,7 @@ class ScrabbleBoard:
         initialises positions, tiles, and bonuses. Tiles have tile items,
         whereas bonuses have surfaces as items.
         '''
-        self._move_count = 0
+        self.moveCount = 0
         self.position = position  # Stores the position of the scrabble board
         self.scrabs = scrabble.Scrabble(debug=True)
         self.board_tiles = self.scrabs.SBoard  # 2d array of size 15x15 to store tiles currently on the board

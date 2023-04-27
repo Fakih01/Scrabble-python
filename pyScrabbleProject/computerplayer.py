@@ -272,7 +272,7 @@ class ComputerPlayer:  # Loads everything necessary and starts the game.
         game tiles and updates the player tiles.
         """
         print("move submitted")  # player.submit_move(self, self.board)  # currently broken
-        print(f"Submitting move with move_count = {self.scrabble._move_count}")
+        print(f"Submitting move with move_count = {self.scrabble.moveCount}")
         #  print("Your word is", self.player_tiles)  # word isn't rly printing rn
         currentPlayer = self.players[self.currentPlayer]
         # Get a list of tiles that will be submitted
@@ -295,8 +295,8 @@ class ComputerPlayer:  # Loads everything necessary and starts the game.
                 return
             if currentPlayer.scrabble.submit_turn(tileList):
                 # Valid turn, move all played tiles to game.
-                self.scrabble._move_count += 1
-                print("Move count=",self.scrabble._move_count)
+                self.scrabble.moveCount += 1
+                print("Move count=",self.scrabble.moveCount)
                 for tile in currentPlayer.player_tiles:
                     if tile.on_board:
                         self.game_tiles.append(tile)
