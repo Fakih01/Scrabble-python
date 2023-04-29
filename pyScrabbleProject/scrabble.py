@@ -2,23 +2,19 @@ from random import shuffle
 
 from scoringSystem import *
 import twl
+from gamestate import *
 
 
 class Scrabble:
     moveCount = 0
-    
-    def __init__(self, debug):
+
+    def __init__(self, debug, num_players):
         self.debug = debug
-        self._populate_bag()
-        self.shuffle_bag()
         self.SBoard = [
             [None]*15 for _ in range(15)
         ]
-        self._player_rack = []
-        self._draw_tiles(7)
-        self._player_score = 0
-        self.rackList = list(self._player_rack)
-        self.total_score = 0
+        self.playerTry = playerTry
+        self.players = [Player() for _ in range(num_players)]
 
     def _print_board(self):  #  prints board when p is pressed
         """
@@ -33,66 +29,8 @@ class Scrabble:
                 else:
                     print(self.SBoard[j][i], end='')
             print('')
-        print("Rack: ", self._player_rack)
-        return self._player_rack
-
-    def _populate_bag(self):
-        """
-        Fills the bag with the starting letter frequencies.
-        """
-        self._bag = []
-        for letter in DISTRIBUTION:
-            for _ in range(DISTRIBUTION[letter]):
-                self._bag.append(letter)
-
-    def shuffle_bag(self):
-        """
-        Randomizes the contents of the bag.
-        """
-        shuffle(self._bag)
-
-    def _draw_tiles(self, amount):
-        """
-        Removes the specified number of tiles from the bag and puts them into
-        the player rack.
-        """
-        for _ in range(amount):
-            if len(self._bag) > 0:
-                self._player_rack.append(self._bag.pop())
-
-    def num_remaining_tiles(self):
-        """
-        Returns how many tiles remain in the bag.
-        """
-        return len(self._bag)
-
-    def get_rack(self):
-        """
-        Returns a copy of the player's rack
-        """
-        print("get_rack called", self._player_rack)  # wrong rack called  # works now
-        return self._player_rack
-
-    def exchange_tiles(self, old):
-        """
-        Returns the old tiles to the bag and draws an equal number to replace
-        them.
-        """
-        # Only can return letters from the player's rack
-        if self._all_letters_from_rack(old):
-            # Make sure there is enough letters to exchange
-            if len(old) > len(self._bag):
-                return
-
-            # Add the new tiles to the rack
-            self._draw_tiles(len(old))
-
-            # Remove the old from the rack and add them to the bag
-            for letter in old:
-                self._player_rack.remove(letter)
-                self._bag.append(letter)
-
-            self.shuffle_bag()
+        print("Rack: ", self.playerTry._player_rack)
+        return self.playerTry._player_rack
 
     def submit_turn(self, tiles):
         """
@@ -101,9 +39,9 @@ class Scrabble:
         """
         print("Tiles submitted:", tiles)
         if self._is_valid_move(tiles):
-            self._score_turn(tiles)
+            self.playerTry._score_turn(tiles)
             self._place_move(tiles)
-            self._update_player_rack(tiles)
+            self.playerTry._update_player_rack(tiles)
             return True
         else:
             return False
@@ -126,31 +64,13 @@ class Scrabble:
         self._turn_score = 0
 
         return (
-            self._all_letters_from_rack(letters) and
+            self.playerTry._all_letters_from_rack(letters) and
             self._is_colinear(rows, cols) and
             self._all_unique_places(rows, cols) and
             self._is_contiguous(rows, cols) and
             self._touches_others(rows, cols) and
             self._all_valid_words(tiles)
         )
-
-    def _all_letters_from_rack(self, letters):
-        """
-        Determines if all letters are present in the player's rack.
-        """
-        rack = self._player_rack[:]
-        print("Checking rack:", rack)  # Debugging line
-        print("Checking letters:", letters)  # Debugging line
-        for letter in letters:
-            if letter in rack:
-                rack.remove(letter)
-            else:
-                if self.debug:
-                    print("Validation: Not all letters are from the rack")
-                return False
-
-        # All letters were in the rack
-        return True
 
     def _is_colinear(self, rows, cols):
         """
@@ -419,16 +339,6 @@ class Scrabble:
         for row, col, letter in tiles:
             self.SBoard[row][col] = letter
 
-    def _update_player_rack(self, tiles):
-        """
-        Removed the letters from the player rack and draw new ones.
-        """
-        for _, _, letter in tiles:
-            self._player_rack.remove(letter)
-
-        self._draw_tiles(len(tiles))
-        print("updated rack should be", self._player_rack)
-
     def _score_word(self, start, end, letters):
         """
         Adds the score of the valid word between start and end.
@@ -444,9 +354,122 @@ class Scrabble:
                 else:
                     # Tile must be on board, add it's value
                     score += POINTS[self.SBoard[row][col]]
-
+        self._turn_score = 0
         self._turn_score += score*multiplier
+        self.playerTry.increase_score(self._turn_score)
         print("Score for this word is:", self._turn_score)
+
+    def get_score(self):
+        # Returns the player's score
+        return self._turn_score
+
+
+class Player:
+    def __init__(self):
+        # Intializes a player instance. Creates the player's rack by creating an instance of that class.
+        # Takes the bag as an argument, in order to create the rack.
+        self._turn_score = 0
+        self.name = ""
+        self._player_rack = []
+        self._bag = []
+        self._populate_bag()
+        self.shuffle_bag()
+        self._draw_tiles(7)
+        self._player_score = 0
+        self.total_score = 0
+
+    def set_name(self, name):
+        # Sets the player's name.
+        self.name = name
+
+    def get_name(self):
+        # Gets the player's name.
+        return self.name
+
+    def _populate_bag(self):
+        """
+        Fills the bag with the starting letter frequencies.
+        """
+        self._bag = []
+        for letter in DISTRIBUTION:
+            for _ in range(DISTRIBUTION[letter]):
+                self._bag.append(letter)
+
+    def shuffle_bag(self):
+        """
+        Randomizes the contents of the bag.
+        """
+        shuffle(self._bag)
+
+    def _draw_tiles(self, amount):
+        """
+        Removes the specified number of tiles from the bag and puts them into
+        the player rack.
+        """
+        for _ in range(amount):
+            if len(self._bag) > 0:
+                self._player_rack.append(self._bag.pop())
+
+    def num_remaining_tiles(self):
+        """
+        Returns how many tiles remain in the bag.
+        """
+        return len(self._bag)
+
+    def get_rack(self):
+        """
+        Returns a copy of the player's rack
+        """
+        print("get_rack called", self._player_rack)  # wrong rack called  # works now
+        return self._player_rack
+
+    def exchange_tiles(self, old):
+        """
+        Returns the old tiles to the bag and draws an equal number to replace
+        them.
+        """
+        # Only can return letters from the player's rack
+        if self._all_letters_from_rack(old):
+            # Make sure there is enough letters to exchange
+            if len(old) > len(self._bag):
+                return
+
+            # Add the new tiles to the rack
+            self._draw_tiles(len(old))
+
+            # Remove the old from the rack and add them to the bag
+            for letter in old:
+                self._player_rack.remove(letter)
+                self._bag.append(letter)
+
+            self.shuffle_bag()
+
+    def _update_player_rack(self, tiles):
+        """
+        Removed the letters from the player rack and draw new ones.
+        """
+        for _, _, letter in tiles:
+            self._player_rack.remove(letter)
+
+        self._draw_tiles(len(tiles))
+        print("updated rack should be", self._player_rack)
+
+    def _all_letters_from_rack(self, letters):
+        """
+        Determines if all letters are present in the player's rack.
+        """
+        rack = self._player_rack[:]
+        print("Checking rack:", rack)  # Debugging line
+        print("Checking letters:", letters)  # Debugging line
+        for letter in letters:
+            if letter in rack:
+                rack.remove(letter)
+            else:
+                print("Validation: Not all letters are from the rack")
+                return False
+
+        # All letters were in the rack
+        return True
 
     def _score_turn(self, tiles):
         """
@@ -459,19 +482,22 @@ class Scrabble:
         # Reset turn score counter
         self._turn_score = 0
 
-        if self.debug:
-            print("Total score:", self._player_score)
+        print("Total score for this player:", self._player_score)
+
+    def increase_score(self, increase):
+        #Increases the player's score by a certain amount. Takes the increase (int) as an argument and adds it to the score.
+        self._player_score += increase
+        print("increased player score: ", self._player_score)
 
     def get_total_score(self):
-        #print("Total score is: ", self._player_score)
+        #print("Total score for this player is: ", self._player_score)
         return self._player_score
 
-    def total_game_score(self):
-        print()
 
+playerTry = Player()
 
 def test():
-    scrabble = Scrabble()
+    scrabble = Scrabble(True)
 
     scrabble._print_board()
 

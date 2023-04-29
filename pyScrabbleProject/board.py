@@ -1,7 +1,7 @@
 import pygame
 import colours
 import player
-import scrabble
+from scrabble import *
 import tileModule
 import resourceFile
 import scoringSystem as sS
@@ -20,7 +20,7 @@ class ScrabbleBoard:
         '''
         self.moveCount = 0
         self.position = position  # Stores the position of the scrabble board
-        self.scrabs = scrabble.Scrabble(debug=True)
+        self.scrabs = Scrabble(True, 1)
         self.board_tiles = self.scrabs.SBoard  # 2d array of size 15x15 to store tiles currently on the board
         self.resourceManagement = resourceManagement  # The resource manager
         self.boardSize = (15 * resourceFile.Tile_Size[0],
