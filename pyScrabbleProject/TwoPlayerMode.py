@@ -150,8 +150,15 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         for i, letter in enumerate(self.playerTry.get_rack()):
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
+    def update_player_score(self):
+        self.score = 0
+        self.score += self.playerTry.get_total_score()
+        return self.score
+
+    def total_player_score(self):
+        self.running_score = 0
+
     def handle_event(self, evt):
-        currentPlayer = self.currentPlayer
         if evt.type == pygame.MOUSEBUTTONUP:
             position = list(pygame.mouse.get_pos())
             if position in self.board:
@@ -195,8 +202,8 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
 
     # Add a method to render the score
     def render_score(self, scrn):
-        p1_score = self.playerTry.get_total_score()
-        p2_score = self.playerTry.get_total_score()
+        p1_score = self.update_player_score()
+        p2_score = self.update_player_score()
         p1_score_text = f"Player 1 Score: {p1_score}"
         p2_score_text = f"Player 2 Score: {p2_score}"
         font = pygame.font.Font('freesansbold.ttf', 15)
@@ -269,6 +276,7 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
             self.currentPlayer = self.players[self.currentPlayerKey]
             print("Player", self.currentPlayerKey, "'s turn!")
             self.update_player_tiles()
+            self.update_player_score()
 
         else:
             # Invalid turn, return all tiles to rack
