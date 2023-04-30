@@ -195,8 +195,8 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
 
     # Add a method to render the score
     def render_score(self, scrn):
-        p1_score = self.players[1].get_total_score()
-        p2_score = self.players[2].get_total_score()
+        p1_score = self.playerTry.get_total_score()
+        p2_score = self.playerTry.get_total_score()
         p1_score_text = f"Player 1 Score: {p1_score}"
         p2_score_text = f"Player 2 Score: {p2_score}"
         font = pygame.font.Font('freesansbold.ttf', 15)

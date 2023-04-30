@@ -206,7 +206,7 @@ class Scrabble:
                         print("Validation: Invalid word:", word)
                     return False
 
-                self._score_word((start, col), (end, col), letters)
+                self.playerTry._score_word(self.SBoard, (start, col), (end, col), letters)
 
             # Check all horizontal words made from each of the new tiles
             for row, col, _ in tiles:
@@ -246,7 +246,7 @@ class Scrabble:
                         print("Validation: Invalid word:", word)
                     return False
 
-                self._score_word((row, start_h), (row, end_h), letters)
+                self.playerTry._score_word(self.SBoard, (row, start_h), (row, end_h), letters)
 
         else:  # is horizontal
             start = min(cols)
@@ -278,7 +278,7 @@ class Scrabble:
                     print("Validation: Invalid word:", word)
                 return False
 
-            self._score_word((row, start), (row, end), letters)
+            self.playerTry._score_word(self.SBoard, (row, start), (row, end), letters)
 
             # Check all vertical words made from each of the new tiles
             for row, col, _ in tiles:
@@ -313,7 +313,7 @@ class Scrabble:
                         print("Validation: Invalid word:", word)
                     return False
 
-                self._score_word((start_v, col), (end_v, col), letters)
+                self.playerTry._score_word(self.SBoard, (start_v, col), (end_v, col), letters)
 
         # Validated all words
         if self.debug:
@@ -338,26 +338,6 @@ class Scrabble:
         print("Move count=", Scrabble.moveCount)
         for row, col, letter in tiles:
             self.SBoard[row][col] = letter
-
-    def _score_word(self, start, end, letters):
-        """
-        Adds the score of the valid word between start and end.
-        """
-        score = 0
-        multiplier = 1
-        for row in range(start[0], end[0] + 1):
-            for col in range(start[1], end[1] + 1):
-                if (row, col) in letters:
-                    # Check for score modifiers
-                    multiplier *= WORD_MULTIPLIERS.get((row, col), 1)
-                    score += POINTS[letters[(row, col)]]*LETTER_MULTIPLIERS.get((row, col), 1)
-                else:
-                    # Tile must be on board, add it's value
-                    score += POINTS[self.SBoard[row][col]]
-        self._turn_score = 0
-        self._turn_score += score*multiplier
-        self.playerTry.increase_score(self._turn_score)
-        print("Score for this word is:", self._turn_score)
 
     def get_score(self):
         # Returns the player's score
@@ -471,6 +451,26 @@ class Player:
         # All letters were in the rack
         return True
 
+    def _score_word(self, SBoard, start, end, letters):
+        """
+        Adds the score of the valid word between start and end.
+        """
+        score = 0
+        multiplier = 1
+        for row in range(start[0], end[0] + 1):
+            for col in range(start[1], end[1] + 1):
+                if (row, col) in letters:
+                    # Check for score modifiers
+                    multiplier *= WORD_MULTIPLIERS.get((row, col), 1)
+                    score += POINTS[letters[(row, col)]]*LETTER_MULTIPLIERS.get((row, col), 1)
+                else:
+                    # Tile must be on board, add it's value
+                    score += POINTS[SBoard[row][col]]
+        self._turn_score = 0
+        self._turn_score += score*multiplier
+        #self.increase_score(self._turn_score)
+        print("Score for this word is:", self._turn_score)
+
     def _score_turn(self, tiles):
         """
         Applies the score of the last validated move to the player score.
@@ -488,6 +488,7 @@ class Player:
         #Increases the player's score by a certain amount. Takes the increase (int) as an argument and adds it to the score.
         self._player_score += increase
         print("increased player score: ", self._player_score)
+        return self._player_score
 
     def get_total_score(self):
         #print("Total score for this player is: ", self._player_score)
