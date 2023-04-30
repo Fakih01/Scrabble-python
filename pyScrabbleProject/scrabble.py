@@ -339,11 +339,6 @@ class Scrabble:
         for row, col, letter in tiles:
             self.SBoard[row][col] = letter
 
-    def get_score(self):
-        # Returns the player's score
-        return self._turn_score
-
-
 class Player:
     def __init__(self):
         # Intializes a player instance. Creates the player's rack by creating an instance of that class.
@@ -469,7 +464,11 @@ class Player:
         self._turn_score = 0
         self._turn_score += score*multiplier
         #self.increase_score(self._turn_score)
-        print("Score for this word is:", self._turn_score)
+        #print("Score for this word is:", self._turn_score)
+
+    def get_turn_score(self):
+
+        return self._turn_score
 
     def _score_turn(self, tiles):
         """
@@ -480,15 +479,15 @@ class Player:
         if len(tiles) == 7:
             self._player_score += 50
         # Reset turn score counter
-        self._turn_score = 0
+        #self._turn_score = 0
 
-        print("Total score for this player:", self._player_score)
+        #print("Total score for this player:", self._player_score)
 
     def increase_score(self, increase):
         #Increases the player's score by a certain amount. Takes the increase (int) as an argument and adds it to the score.
-        self._player_score += increase
+        self._turn_score += increase
         print("increased player score: ", self._player_score)
-        return self._player_score
+        return self._turn_score
 
     def get_total_score(self):
         #print("Total score for this player is: ", self._player_score)

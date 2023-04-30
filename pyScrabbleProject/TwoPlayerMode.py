@@ -123,10 +123,12 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         self.selectedTile = None    # Selected tile should be a letter only
         self.player_tiles = []
         self.game_tiles = []
+        self.running_score = 0
         # Initialize two players
         self.players = {1: Player(), 2: Player()}
         self.currentPlayer = self.players[1]
         self.currentPlayerKey = 1
+        self.player_scores = {1: 0, 2: 0}
 
         # Update the initial tiles for both players
         for i, letter in enumerate(self.playerTry.get_rack()):
@@ -151,12 +153,12 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
     def update_player_score(self):
-        self.score = 0
-        self.score += self.playerTry.get_total_score()
-        return self.score
+        score = self.playerTry.get_turn_score()
+        self.player_scores[self.currentPlayerKey] += score
+        return score
 
     def total_player_score(self):
-        self.running_score = 0
+        self.runni_score = 0
 
     def handle_event(self, evt):
         if evt.type == pygame.MOUSEBUTTONUP:
@@ -202,8 +204,8 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
 
     # Add a method to render the score
     def render_score(self, scrn):
-        p1_score = self.update_player_score()
-        p2_score = self.update_player_score()
+        p1_score = self.player_scores[1]
+        p2_score = self.player_scores[2]
         p1_score_text = f"Player 1 Score: {p1_score}"
         p2_score_text = f"Player 2 Score: {p2_score}"
         font = pygame.font.Font('freesansbold.ttf', 15)
@@ -268,15 +270,17 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
 
             # Update the player tiles
             currentPlayer.player_tiles = []
+            currentPlayer.totalScore = 0
             for i, letter in enumerate(currentPlayer.get_rack()):
                 currentPlayer.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
+            currentPlayer.totalScore += self.update_player_score()
+            print("total player score for", f"Player {self.currentPlayerKey}", "is", currentPlayer.totalScore)
 
             # Switch to the other player
             self.currentPlayerKey = 3 - self.currentPlayerKey
             self.currentPlayer = self.players[self.currentPlayerKey]
             print("Player", self.currentPlayerKey, "'s turn!")
             self.update_player_tiles()
-            self.update_player_score()
 
         else:
             # Invalid turn, return all tiles to rack
