@@ -30,7 +30,10 @@ class AIPlayer(Player):
     def make_ai_move(self):
         #rack = self._player_rack
         words_on_board = self.AIscrabbleInstance.find_words_on_board()
-        print(words_on_board)
+        for item in words_on_board:
+            item = item.lower()
+            AIScrabbleInstance.find_valid_words(item)
+
         #best_move = self.find_best_move()
 
         #if best_move is None:
@@ -225,17 +228,15 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             self.currentPlayer = self.players[self.currentPlayerKey]
             if self.currentPlayerKey == 1:
                 print("Player", self.currentPlayerKey, "'s turn!")
-                self.update_player_tiles()
 
             else:
                 self.currentPlayer = self.players[self.currentPlayerKey]
                 print("Computer's turn!")
                 self.computer_move()
-                self.update_player_tiles()
 
                 #code for computer turn go here!
 
-            #self.update_player_tiles()
+            self.update_player_tiles()
 
         else:
             # Invalid turn, return all tiles to rack
