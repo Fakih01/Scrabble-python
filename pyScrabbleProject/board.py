@@ -1,6 +1,5 @@
 import pygame
 import colours
-import player
 from scrabble import *
 import tileModule
 import resourceFile

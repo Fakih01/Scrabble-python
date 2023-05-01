@@ -1,3 +1,4 @@
+import itertools
 from random import shuffle
 
 from scoringSystem import *
@@ -13,7 +14,7 @@ class Scrabble:
         self.SBoard = [
             [None]*15 for _ in range(15)
         ]
-        self.playerTry = playerTry
+        self.player = player
         self.players = [Player() for _ in range(num_players)]
 
     def _print_board(self):  #  prints board when p is pressed
@@ -29,8 +30,8 @@ class Scrabble:
                 else:
                     print(self.SBoard[j][i], end='')
             print('')
-        print("Rack: ", self.playerTry._player_rack)
-        return self.playerTry._player_rack
+        print("Rack: ", self.player._player_rack)
+        return self.player._player_rack
 
     def submit_turn(self, tiles):
         """
@@ -39,9 +40,9 @@ class Scrabble:
         """
         print("Tiles submitted:", tiles)
         if self._is_valid_move(tiles):
-            self.playerTry._score_turn(tiles)
+            self.player._score_turn(tiles)
             self._place_move(tiles)
-            self.playerTry._update_player_rack(tiles)
+            self.player._update_player_rack(tiles)
             return True
         else:
             return False
@@ -64,7 +65,7 @@ class Scrabble:
         self._turn_score = 0
 
         return (
-            self.playerTry._all_letters_from_rack(letters) and
+            self.player._all_letters_from_rack(letters) and
             self._is_colinear(rows, cols) and
             self._all_unique_places(rows, cols) and
             self._is_contiguous(rows, cols) and
@@ -206,7 +207,7 @@ class Scrabble:
                         print("Validation: Invalid word:", word)
                     return False
 
-                self.playerTry._score_word(self.SBoard, (start, col), (end, col), letters)
+                self.player._score_word(self.SBoard, (start, col), (end, col), letters)
 
             # Check all horizontal words made from each of the new tiles
             for row, col, _ in tiles:
@@ -246,7 +247,7 @@ class Scrabble:
                         print("Validation: Invalid word:", word)
                     return False
 
-                self.playerTry._score_word(self.SBoard, (row, start_h), (row, end_h), letters)
+                self.player._score_word(self.SBoard, (row, start_h), (row, end_h), letters)
 
         else:  # is horizontal
             start = min(cols)
@@ -278,7 +279,7 @@ class Scrabble:
                     print("Validation: Invalid word:", word)
                 return False
 
-            self.playerTry._score_word(self.SBoard, (row, start), (row, end), letters)
+            self.player._score_word(self.SBoard, (row, start), (row, end), letters)
 
             # Check all vertical words made from each of the new tiles
             for row, col, _ in tiles:
@@ -313,7 +314,7 @@ class Scrabble:
                         print("Validation: Invalid word:", word)
                     return False
 
-                self.playerTry._score_word(self.SBoard, (start_v, col), (end_v, col), letters)
+                self.player._score_word(self.SBoard, (start_v, col), (end_v, col), letters)
 
         # Validated all words
         if self.debug:
@@ -328,6 +329,7 @@ class Scrabble:
         ret = twl.check(word)  # checks if word is valid
         if self.debug:
             print(f"Word '{word}' is valid? {ret}")
+        #list(twl.anagram(word))
         return twl.check(word)
 
     def _place_move(self, tiles):
@@ -338,6 +340,7 @@ class Scrabble:
         print("Move count=", Scrabble.moveCount)
         for row, col, letter in tiles:
             self.SBoard[row][col] = letter
+
 
 class Player:
     def __init__(self):
@@ -464,7 +467,7 @@ class Player:
         self._turn_score = 0
         self._turn_score += score*multiplier
         #self.increase_score(self._turn_score)
-        #print("Score for this word is:", self._turn_score)
+        print("Score for this word is:", self._turn_score)
 
     def get_turn_score(self):
 
@@ -494,7 +497,8 @@ class Player:
         return self._player_score
 
 
-playerTry = Player()
+player = Player()
+
 
 def test():
     scrabble = Scrabble(True)

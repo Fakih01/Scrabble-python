@@ -166,11 +166,13 @@ def anagram(letters):
     a wildcard.
     '''
     for word in _DAWG.anagram(letters):
+        print(word)
         yield word
 
 
 END = '$'
 WILD = '?'
+
 
 class _Dawg(object):
     def __init__(self, data):

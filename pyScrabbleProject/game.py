@@ -78,7 +78,7 @@ class ScrabbleGame:
         screen = pygame.display.set_mode(SIZE)
         clock = pygame.time.Clock()
         running = True
-        currentState = computerplayer.ComputerPlayer(self.resourceManagement, ai)  # reference to the CP class
+        currentState = computerplayer.ComputerGame(self.resourceManagement, ai)  # reference to the CP class
 
         pygame.display.set_caption("Scrabble Game")
 

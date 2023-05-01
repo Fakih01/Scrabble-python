@@ -1,141 +1,83 @@
+import random
 import sys
-
+import twl
 from LettersSpritesheet import SpriteSheet
 import resourceFile
 from board import ScrabbleBoard as SB
-import deck
 import pygame
 from scoringSystem import *
 from scrabble import *
+import itertools
+from gamestate import *
+from ScrabbleAI import *
 
 
-# The rest is code where you implement your game using the Scenes model
-def tile_to_pixel(x, y):
-    """
-    Takes an x, y coordinate of the board and translates into the
-    corresponding pixel coordinate.
+class AIPlayer(Player):
+    def __init__(self, AIscrabbleInstance):
+        self.AIscrabbleInstance = AIscrabbleInstance
+        super().__init__()
 
-    Note: 0, 0 is top left of board.
-    """
-    pixel_x = 1 + 50*x
-    pixel_y = 1 + 50*y
-    return pixel_x, pixel_y
+    def find_best_move(self):
+        print("Searching move")
+        valid_moves = self.AIscrabbleInstance.find_valid_moves()
 
+        if not valid_moves:
+            return None
 
-def pixel_to_tile(x, y):
-    """
-    Takes an x, y coordinate of the cursor and translates into the
-    corresponding tile coordinate.
-    """
-    tile_x = (x - 2)//50
-    tile_y = (y - 2)//50
-    return tile_x, tile_y
+        best_move = max(valid_moves, key=lambda move: move[0])
+        return best_move
 
+    def make_ai_move(self):
+        #rack = self._player_rack
+        words_on_board = self.AIscrabbleInstance.find_words_on_board()
+        print(words_on_board)
+        #best_move = self.find_best_move()
 
-class Tile(pygame.sprite.Sprite):
-    def __init__(self, letter, spritesheet, location):
-        pygame.sprite.Sprite.__init__(self)
-        self.tileBlock = spritesheet.image_at(LETTER_COORDINATES[letter])
-        self.letter = letter
-        self.board_x = None
-        self.board_y = None
-        self.rect = self.tileBlock.get_rect()
-        self.rect.left, self.rect.top = location
-        self.tray_position = location
-        self.on_board = False  # changed to true and printed a bunch of stuff
-        self.m = []
-        self.UsedLetters = []
-        #self.SBoardInstance = SBoardInstance
-        #self.bTiles = SBoardInstance.SBoard
-        self.submitted = False
+        #if best_move is None:
+         #   print("No valid moves found for the AI player.")
+          #  return
 
-    def add_move(self, x, y, letter):
-        print("add move is called in move class originating from gs class")  # works
-        # Appends word onto move array and checks for letters that are in the same position.
-        for i, j, l in self.m:
-            if i == x and j == y:
-                print("error: attempt to place letter in same position")
-                raise Exception("error: attempt to place letter in same position")
+        #score, word, start_pos, direction = best_move
+        #tiles = [(start_pos[0] + i * direction[0], start_pos[1] + i * direction[1], letter) for i, letter in
+         #        enumerate(word)]
 
-        self.m.append((x, y, letter))
-        print(f"Tile '{letter}' placed at ({x}, {y})")
-        #  print(self.m)
-        #  print(self.worddd)
-        self.UsedLetters.append(letter)
-        word = ''.join(self.UsedLetters)
-        #self.bTiles[x][y] = letter
-        print("The letters you have used are", word)
-        # board.ScrabbleBoard.get_tile_pos(self,position)
-        #print("after add move", self.board_y, self.board_x, letter, self.on_board)
-        #print(self.bTiles)
-
-        return self.board_x, self.board_y, letter, self.on_board
-
-    def remove_move(self, x, y):  # Returns the removed letter
-
-        rem = None
-        for i, j, l in self.m:
-            if i == x and j == y:
-                # A match!
-                rem = (i, j, l)
-
-        if rem is None:
-            raise Exception("error: letter doesn't exist and cannot be removed")
-
-        self.m.remove(rem)
-        self.on_board = False
-        return rem[2]
-
-    def move(self, pos):
-        tile_x, tile_y = pixel_to_tile(*pos)
-        if 0 <= tile_x < 15 and 0 <= tile_y < 15:  # working but self.board_x etc just not updating
-            self.on_board = True
-            self.board_x = tile_x  # now is updating
-            self.board_y = tile_y  # same
-            self.rect.topleft = tile_to_pixel(tile_x, tile_y)
-            print("tile status= ", self.on_board)
-        else:
-            self.on_board = False
-            self.rect.topleft = self.tray_position
-            print("tile status =", self.on_board)
-
-    def tile(self):
-        """Returns the tuple (board_x, board_y, letter)."""
-        print(f"printing from tile function: board_x={self.board_x}, board_y={self.board_y}, letter={self.letter}")
-        return self.board_x, self.board_y, self.letter
-
-    def rerack(self):
-        """Moves the tile back to the rack."""
-        self.on_board = False
-        self.rect.topleft = self.tray_position
-        print(self.letter, "back to rack")
+       # if self.AIscrabbleInstance.submit_turn(tiles):
+       #     print(f"AI placed the word '{word}' with a score of {score}.")
 
 
-class ComputerPlayer:  # Loads everything necessary and starts the game.
+AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble, num_players=2)
+ai_player = AIPlayer(AIScrabbleInstance)
+
+
+class ComputerGame:  # Loads everything necessary and starts the game.
     def __init__(self, resourceManagement, ai=False):
-        self.playerTry = playerTry
+        self.player = player
         self.scrabble = Scrabble(True, 2)
+        self.scrabble_ai = AIScrabble(True, self.scrabble, 1)
         self.ai = ai
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
         self.letterTiles = SpriteSheet('resources/images/LetterSprite.png')
-        self.deck = deck.Deck()
         self.selectedTile = None    # Selected tile should be a letter only
         self.player_tiles = []
         self.game_tiles = []
         self.running_score = 0
         # Initialize two players
-        self.players = {1: Player(), 2: Player()}
+        self.players = {1: Player(), 2: AIPlayer(self.scrabble_ai)}
         self.currentPlayer = self.players[1]
         self.currentPlayerKey = 1
         self.player_scores = {1: 0, 2: 0}
 
         # Update the initial tiles for both players
-        for i, letter in enumerate(self.playerTry.get_rack()):
+        for i, letter in enumerate(self.player.get_rack()):
             self.player_tiles.append(
                 Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
 
         self.currentMove = Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i])
+
+    def computer_move(self):
+        print("Computer move.")
+        self.players[2].make_ai_move()
 
     def drawHand(self, scrn):
         '''
@@ -149,11 +91,11 @@ class ComputerPlayer:  # Loads everything necessary and starts the game.
 
     def update_player_tiles(self):
         self.player_tiles = []
-        for i, letter in enumerate(self.playerTry.get_rack()):
+        for i, letter in enumerate(self.player.get_rack()):
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
     def update_player_score(self):
-        score = self.playerTry.get_turn_score()
+        score = self.player.get_turn_score()
         self.player_scores[self.currentPlayerKey] += score
         return score
 
@@ -197,10 +139,10 @@ class ComputerPlayer:  # Loads everything necessary and starts the game.
             elif evt.key == pygame.K_p:
                 self.scrabble._print_board()
             elif evt.key == pygame.K_e:
-                old_tiles = self.playerTry._player_rack
-                self.playerTry.exchange_tiles(old_tiles)
+                old_tiles = self.player._player_rack
+                self.player.exchange_tiles(old_tiles)
                 self.update_player_tiles()  # Update player tiles after the exchange
-                print("Your new exchanged tiles are: ", self.playerTry._player_rack)
+                print("Your new exchanged tiles are: ", self.player._player_rack)
 
     # Add a method to render the score
     def render_score(self, scrn):
@@ -216,7 +158,10 @@ class ComputerPlayer:  # Loads everything necessary and starts the game.
 
     def render_turn(self, scrn):
         """Renders the text displaying the current player's turn."""
-        turn_text = f"Player {self.currentPlayerKey}'s Turn!"
+        if self.currentPlayerKey ==1:
+            turn_text = f"Player {self.currentPlayerKey}'s Turn!"
+        else:
+            turn_text = f" Computer's turn!"
         font = pygame.font.Font('freesansbold.ttf', 23)
         turn_surface = font.render(turn_text, True, (255, 255, 255))
         scrn.blit(turn_surface, (770, 20))
@@ -226,7 +171,6 @@ class ComputerPlayer:  # Loads everything necessary and starts the game.
         self.render_score(scrn)
         self.render_turn(scrn)
         self.drawHand(scrn)
-
 
     def update(self, delta):
         '''
@@ -279,8 +223,19 @@ class ComputerPlayer:  # Loads everything necessary and starts the game.
             # Switch to the other player
             self.currentPlayerKey = 3 - self.currentPlayerKey
             self.currentPlayer = self.players[self.currentPlayerKey]
-            print("Player", self.currentPlayerKey, "'s turn!")
-            self.update_player_tiles()
+            if self.currentPlayerKey == 1:
+                print("Player", self.currentPlayerKey, "'s turn!")
+                self.update_player_tiles()
+
+            else:
+                self.currentPlayer = self.players[self.currentPlayerKey]
+                print("Computer's turn!")
+                self.computer_move()
+                self.update_player_tiles()
+
+                #code for computer turn go here!
+
+            #self.update_player_tiles()
 
         else:
             # Invalid turn, return all tiles to rack

@@ -7,113 +7,12 @@ import deck
 import pygame
 from scoringSystem import *
 from scrabble import *
-
-
-# The rest is code where you implement your game using the Scenes model
-def tile_to_pixel(x, y):
-    """
-    Takes an x, y coordinate of the board and translates into the
-    corresponding pixel coordinate.
-
-    Note: 0, 0 is top left of board.
-    """
-    pixel_x = 1 + 50*x
-    pixel_y = 1 + 50*y
-    return pixel_x, pixel_y
-
-
-def pixel_to_tile(x, y):
-    """
-    Takes an x, y coordinate of the cursor and translates into the
-    corresponding tile coordinate.
-    """
-    tile_x = (x - 2)//50
-    tile_y = (y - 2)//50
-    return tile_x, tile_y
-
-
-class Tile(pygame.sprite.Sprite):
-    def __init__(self, letter, spritesheet, location):
-        pygame.sprite.Sprite.__init__(self)
-        self.tileBlock = spritesheet.image_at(LETTER_COORDINATES[letter])
-        self.letter = letter
-        self.board_x = None
-        self.board_y = None
-        self.rect = self.tileBlock.get_rect()
-        self.rect.left, self.rect.top = location
-        self.tray_position = location
-        self.on_board = False  # changed to true and printed a bunch of stuff
-        self.m = []
-        self.UsedLetters = []
-        #self.SBoardInstance = SBoardInstance
-        #self.bTiles = SBoardInstance.SBoard
-        self.submitted = False
-
-    def add_move(self, x, y, letter):
-        print("add move is called in move class originating from gs class")  # works
-        # Appends word onto move array and checks for letters that are in the same position.
-        for i, j, l in self.m:
-            if i == x and j == y:
-                print("error: attempt to place letter in same position")
-                raise Exception("error: attempt to place letter in same position")
-
-        self.m.append((x, y, letter))
-        print(f"Tile '{letter}' placed at ({x}, {y})")
-        #  print(self.m)
-        #  print(self.worddd)
-        self.UsedLetters.append(letter)
-        word = ''.join(self.UsedLetters)
-        #self.bTiles[x][y] = letter
-        print("The letters you have used are", word)
-        # board.ScrabbleBoard.get_tile_pos(self,position)
-        #print("after add move", self.board_y, self.board_x, letter, self.on_board)
-        #print(self.bTiles)
-
-        return self.board_x, self.board_y, letter, self.on_board
-
-    def remove_move(self, x, y):  # Returns the removed letter
-
-        rem = None
-        for i, j, l in self.m:
-            if i == x and j == y:
-                # A match!
-                rem = (i, j, l)
-
-        if rem is None:
-            raise Exception("error: letter doesn't exist and cannot be removed")
-
-        self.m.remove(rem)
-        self.on_board = False
-        return rem[2]
-
-    def move(self, pos):
-        tile_x, tile_y = pixel_to_tile(*pos)
-        if 0 <= tile_x < 15 and 0 <= tile_y < 15:  # working but self.board_x etc just not updating
-            self.on_board = True
-            self.board_x = tile_x  # now is updating
-            self.board_y = tile_y  # same
-            self.rect.topleft = tile_to_pixel(tile_x, tile_y)
-            print("tile status= ", self.on_board)
-        else:
-            self.on_board = False
-            self.rect.topleft = self.tray_position
-            print("tile status =", self.on_board)
-
-    def tile(self):
-        """Returns the tuple (board_x, board_y, letter)."""
-        print(f"printing from tile function: board_x={self.board_x}, board_y={self.board_y}, letter={self.letter}")
-        return self.board_x, self.board_y, self.letter
-
-    def rerack(self):
-        """Moves the tile back to the rack."""
-        self.on_board = False
-        self.rect.topleft = self.tray_position
-        print(self.letter, "back to rack")
+from gamestate import *
 
 
 class TwoPlayerGame:  # Loads everything necessary and starts the game.
     def __init__(self, resourceManagement, ai=False):
-        self.playerTry = playerTry
+        self.player = player
         self.scrabble = Scrabble(True, 2)
         self.ai = ai
         self.resourceManagement = resourceManagement
@@ -131,7 +30,7 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         self.player_scores = {1: 0, 2: 0}
 
         # Update the initial tiles for both players
-        for i, letter in enumerate(self.playerTry.get_rack()):
+        for i, letter in enumerate(self.player.get_rack()):
             self.player_tiles.append(
                 Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
 
@@ -149,11 +48,11 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
 
     def update_player_tiles(self):
         self.player_tiles = []
-        for i, letter in enumerate(self.playerTry.get_rack()):
+        for i, letter in enumerate(self.player.get_rack()):
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
     def update_player_score(self):
-        score = self.playerTry.get_turn_score()
+        score = self.player.get_turn_score()
         self.player_scores[self.currentPlayerKey] += score
         return score
 
@@ -197,10 +96,10 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
             elif evt.key == pygame.K_p:
                 self.scrabble._print_board()
             elif evt.key == pygame.K_e:
-                old_tiles = self.playerTry._player_rack
-                self.playerTry.exchange_tiles(old_tiles)
+                old_tiles = self.player._player_rack
+                self.player.exchange_tiles(old_tiles)
                 self.update_player_tiles()  # Update player tiles after the exchange
-                print("Your new exchanged tiles are: ", self.playerTry._player_rack)
+                print("Your new exchanged tiles are: ", self.player._player_rack)
 
     # Add a method to render the score
     def render_score(self, scrn):
@@ -208,11 +107,11 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         p2_score = self.player_scores[2]
         p1_score_text = f"Player 1 Score: {p1_score}"
         p2_score_text = f"Player 2 Score: {p2_score}"
-        font = pygame.font.Font('freesansbold.ttf', 15)
+        font = pygame.font.Font('freesansbold.ttf', 18)
         p1_score_surface = font.render(p1_score_text, True, (255, 255, 255))
         p2_score_surface = font.render(p2_score_text, True, (255, 255, 255))
         scrn.blit(p1_score_surface, (800, 80))
-        scrn.blit(p2_score_surface, (800, 100))
+        scrn.blit(p2_score_surface, (800, 400))
 
     def render_turn(self, scrn):
         """Renders the text displaying the current player's turn."""
