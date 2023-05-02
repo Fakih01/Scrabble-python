@@ -33,6 +33,7 @@ class AIPlayer(Player):
         for item in words_on_board:
             item = item.lower()
             AIScrabbleInstance.find_valid_words(item)
+            AIScrabbleInstance.find_possible_words(item)
 
         #best_move = self.find_best_move()
 

@@ -52,6 +52,11 @@ class AIScrabble(Scrabble):
         print("valid words: ", valid_words)
         return valid_words
 
+    def find_possible_words(self, word):
+        possible_words = list(children(word))
+        print("Possible words: ", possible_words)
+
+
     def find_valid_moves(self):
         for i in range(15):
             for j in range(15):
