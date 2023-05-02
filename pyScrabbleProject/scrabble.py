@@ -232,7 +232,7 @@ class Scrabble:
                 # No word made horizontally
                 if start_h == end_h:
                     # Issue if only one tile was placed on start
-                    if len(tiles) == 1:
+                    if len(tiles) == 1 and Scrabble.moveCount == 0:
                         if self.debug:
                             print("Validation: Only placed one tile on start")
                         return False
