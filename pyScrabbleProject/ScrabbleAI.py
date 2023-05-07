@@ -16,6 +16,8 @@ class AIScrabble(Scrabble):
         self.scrabbleInstance = scrabbleInstance
         self.direction = None
         self.dictionary = ScrabbleDict()
+        self.memo_cross_check = {}
+        self.memo_extend_after = {}
         super().__init__(debug, num_players)
 
     def _is_valid_word(self, word):
@@ -141,6 +143,8 @@ class AIScrabble(Scrabble):
         print()
 
     def cross_checker(self):
+        if self.direction in self.memo_cross_check:
+            return self.memo_cross_check[self.direction]
         result = dict()
         for pos in self.all_positions():
             if self.is_filled(pos):
@@ -165,6 +169,7 @@ class AIScrabble(Scrabble):
                     if self.dictionary.is_word(word_formed):
                         legal_here.append(letter)
             result[pos] = legal_here
+        self.memo_cross_check[self.direction] = result
         return result
 
     def finding_anchors(self):
@@ -197,6 +202,9 @@ class AIScrabble(Scrabble):
                     self.player._player_rack.append(next_letter)
 
     def extend_right(self, partial_word, current_node, next_pos, anchor_filled):
+        cache_key = (partial_word, current_node, next_pos, anchor_filled)
+        if cache_key in self.memo_extend_after:
+            return self.memo_extend_after[cache_key]
         print("In extend_after, checking conditions")
         print("anchor_filled:", anchor_filled)
         # Check if there are enough spaces left on the board to place remaining letters
@@ -228,6 +236,7 @@ class AIScrabble(Scrabble):
                 if existing_letter in current_node.children.keys():
                     self.extend_right(partial_word + existing_letter, current_node.children[existing_letter],
                                       self.next_coord(next_pos), True)
+        self.memo_extend_after[cache_key] = None
 
     def find_possible_words(self):
         print("finding all options")
