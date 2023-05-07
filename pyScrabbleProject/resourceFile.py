@@ -63,7 +63,7 @@ class ResourceManager:
         self.init_fonts()
 
         # Loads playable tiles
-        self.init_letter_tiles(ord('A'))
+        self.init_letter_tiles(ord('a'))
         self.init_letter_tiles(ord('a'))
 
         # Loads tiles on the board

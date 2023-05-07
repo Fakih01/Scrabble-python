@@ -12,6 +12,7 @@ from gamestate import *
 from ScrabbleAI import *
 
 
+
 class AIPlayer(Player):
     def __init__(self, AIscrabbleInstance):
         self.AIscrabbleInstance = AIscrabbleInstance
@@ -28,12 +29,22 @@ class AIPlayer(Player):
         return best_move
 
     def make_ai_move(self):
+        self.AIscrabbleInstance.find_possible_words()
         #rack = self._player_rack
-        words_on_board = self.AIscrabbleInstance.find_words_on_board()
-        for item in words_on_board:
-            item = item.lower()
-            AIScrabbleInstance.find_valid_words(item)
-            AIScrabbleInstance.find_possible_words(item)
+        #words_on_board = self.AIscrabbleInstance.find_words_on_board()
+        #letters_on_board = self.AIscrabbleInstance.find_letters_on_board()
+        # letters_on_board if sboard row col next to letter = None then can use letter otherwise not
+        #for item in words_on_board:
+            #item = item.lower()
+        #AIScrabbleInstance.find_valid_words(item)
+        #AIScrabbleInstance.find_possible_words(item)
+        #valid_words = self.AIscrabbleInstance.find_words_to_play()
+        #print("Words that can be made with rack and board letters: ", valid_words)
+        #for item1 in letters_on_board:
+            #item1 = item1.lower()
+        #AIScrabbleInstance.find_valid_words_from_letters(item1)
+        #AIScrabbleInstance.find_possible_words_from_letters(item1)
+
 
         #best_move = self.find_best_move()
 
@@ -48,8 +59,28 @@ class AIPlayer(Player):
        # if self.AIscrabbleInstance.submit_turn(tiles):
        #     print(f"AI placed the word '{word}' with a score of {score}.")
 
+    def _score_word_for_best_move(self, SBoard, start, end, letters):
+        """
+        Adds the score of the valid word between start and end.
+        """
+        score = 0
+        multiplier = 1
+        for row in range(start[0], end[0] + 1):
+            for col in range(start[1], end[1] + 1):
+                if (row, col) in letters:
+                    # Check for score modifiers
+                    multiplier *= WORD_MULTIPLIERS.get((row, col), 1)
+                    score += POINTS[letters[(row, col)]]*LETTER_MULTIPLIERS.get((row, col), 1)
+                else:
+                    # Tile must be on board, add it's value
+                    score += POINTS[SBoard[row][col]]
+        self._turn_score = 0
+        self._turn_score += score*multiplier
+        #self.increase_score(self._turn_score)
+        print("Score for this word is:", self._turn_score)
 
-AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble, num_players=2)
+
+AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, 2), num_players=2)
 ai_player = AIPlayer(AIScrabbleInstance)
 
 
