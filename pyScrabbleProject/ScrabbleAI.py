@@ -141,7 +141,6 @@ class AIScrabble(Scrabble):
             board_if_we_played_that.set_tile(play_pos, word[word_idx])
             word_idx -= 1
             play_pos = self.prev_coord(play_pos)
-        print("Board after playing the word:")
         board_if_we_played_that.print_board_here()
         print()
 
@@ -208,20 +207,20 @@ class AIScrabble(Scrabble):
         cache_key = (partial_word, current_node, next_pos, anchor_filled)
         if cache_key in self.memo_extend_after:
             return self.memo_extend_after[cache_key]
-        #print("In extend_after, checking conditions")
-        #print("anchor_filled:", anchor_filled)
+        print("In extend_after, checking conditions")
+        print("anchor_filled:", anchor_filled)
         # Check if there are enough spaces left on the board to place remaining letters
         if len(partial_word) + len(self.player._player_rack) > 14:
             return
         if not self.is_filled(next_pos) and current_node.is_word and anchor_filled:
-            #print("Calling legal_move from extend_after")
+            print("Calling legal_move from extend_after")
             self.legal_move(partial_word, self.prev_coord(next_pos))
-            #print("Called legal_move from extend_after")
+            print("Called legal_move from extend_after")
         if self.in_bounds(next_pos):
             if self.is_empty(next_pos):
-                #print("Entering loop for next_letter")
-                #print(f"Player rack: {self.player._player_rack}")
-                #print(f"Cross check results for next_pos {next_pos}: {self.cross_check_results[next_pos]}")
+                print("Entering loop for next_letter")
+                print(f"Player rack: {self.player._player_rack}")
+                print(f"Cross check results for next_pos {next_pos}: {self.cross_check_results[next_pos]}")
                 for next_letter in current_node.children.keys():
                     if next_letter in self.player._player_rack and next_letter in self.cross_check_results[next_pos]:
                         print(f"Conditions met for next_letter: {next_letter}")
@@ -229,11 +228,11 @@ class AIScrabble(Scrabble):
                         print("removing from rack", self.player._player_rack)
                         self.extend_right(partial_word + next_letter, current_node.children[next_letter],
                                           self.next_coord(next_pos), True)
-                        #print("Exited loop for next_letter")
+                        print("Exited loop for next_letter")
                         #print("Called extend_after recursivelyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
                         self.player._player_rack.append(next_letter)
-                    #else:
-                        #print(f"Conditions not met for next_letter: {next_letter}")
+                    else:
+                        print(f"Conditions not met for next_letter: {next_letter}")
             else:
                 existing_letter = self.get_tile(next_pos)
                 if existing_letter in current_node.children.keys():
@@ -242,7 +241,6 @@ class AIScrabble(Scrabble):
         self.memo_extend_after[cache_key] = None
 
     def process_anchor(self, anchor_pos):
-        anchors = self.finding_anchors()
         if self.is_filled(self.prev_coord(anchor_pos)):
             scan_pos = self.prev_coord(anchor_pos)
             partial_word = self.get_tile(scan_pos)
@@ -268,9 +266,26 @@ class AIScrabble(Scrabble):
             self.direction = direction
             anchors = self.finding_anchors()
             self.cross_check_results = self.cross_checker()
-            with ThreadPoolExecutor() as executor:
-                process_anchor_partial = partial(self.process_anchor)
-                executor.map(process_anchor_partial, anchors)
+            for anchor_pos in anchors:
+                print("For anchor pos in anchors")  #works
+                if self.is_filled(self.prev_coord(anchor_pos)):
+                    scan_pos = self.prev_coord(anchor_pos)
+                    print("scan_posssssssssssssssssssssssssssssssssssssssssssssssss", scan_pos)
+                    partial_word = self.get_tile(scan_pos)
+                    while self.is_filled(self.prev_coord(scan_pos)):
+                        scan_pos = self.prev_coord(scan_pos)
+                        partial_word = self.get_tile(scan_pos) + partial_word
+                        print("Partial worddddddddddd", partial_word)
+                    pw_node = self.dictionary.search(partial_word)
+                    if pw_node is not None:
+                        self.extend_right(partial_word, pw_node, anchor_pos, False)
+                else:
+                    limit = 0
+                    scan_pos = anchor_pos
+                    while self.is_empty(self.prev_coord(scan_pos)) and self.prev_coord(scan_pos) not in anchors:
+                        limit = limit + 1
+                        scan_pos = self.prev_coord(scan_pos)
+                    self.left_part("", self.dictionary.root, anchor_pos, limit)
 
 
 class TrieNode:
