@@ -2,6 +2,7 @@ import pygame
 import itertools
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
+from collections import defaultdict
 from twl import *
 from gamestate import *
 from scrabble import *
@@ -50,7 +51,7 @@ class AIScrabble(Scrabble):
     def set_tile(self, pos, BoardTile):
         row, col = pos
         self.scrabbleInstance.SBoard[row][col] = BoardTile
-        print("Set Tile", BoardTile) #not working
+        #print("Set Tile", BoardTile) #not working
 
     def in_bounds(self, pos):
         row, col = pos
@@ -150,7 +151,7 @@ class AIScrabble(Scrabble):
         result = dict()
         for pos in self.all_positions():
             if self.is_filled(pos):
-                print("cross check, is filled")
+                #print("cross check, is filled")
                 continue
             letters_before = ""
             scan_pos = pos
@@ -184,7 +185,7 @@ class AIScrabble(Scrabble):
                               self.is_filled(self.next_cross_coord(pos))
             if empty and neighbor_filled:
                 anchors.append(pos)
-        print("finding anchors:", anchors)  #works
+        #print("finding anchors:", anchors)  #works
         return anchors
 
     def left_part(self, partial_word, current_node, anchor_pos, limit):
@@ -207,32 +208,32 @@ class AIScrabble(Scrabble):
         cache_key = (partial_word, current_node, next_pos, anchor_filled)
         if cache_key in self.memo_extend_after:
             return self.memo_extend_after[cache_key]
-        print("In extend_after, checking conditions")
-        print("anchor_filled:", anchor_filled)
+        #print("In extend_after, checking conditions")
+        #print("anchor_filled:", anchor_filled)
         # Check if there are enough spaces left on the board to place remaining letters
         if len(partial_word) + len(self.player._player_rack) > 14:
             return
         if not self.is_filled(next_pos) and current_node.is_word and anchor_filled:
-            print("Calling legal_move from extend_after")
+            #print("Calling legal_move from extend_after")
             self.legal_move(partial_word, self.prev_coord(next_pos))
             print("Called legal_move from extend_after")
         if self.in_bounds(next_pos):
             if self.is_empty(next_pos):
-                print("Entering loop for next_letter")
-                print(f"Player rack: {self.player._player_rack}")
-                print(f"Cross check results for next_pos {next_pos}: {self.cross_check_results[next_pos]}")
+                #print("Entering loop for next_letter")
+                #print(f"Player rack: {self.player._player_rack}")
+                #print(f"Cross check results for next_pos {next_pos}: {self.cross_check_results[next_pos]}")
                 for next_letter in current_node.children.keys():
                     if next_letter in self.player._player_rack and next_letter in self.cross_check_results[next_pos]:
-                        print(f"Conditions met for next_letter: {next_letter}")
+                        #print(f"Conditions met for next_letter: {next_letter}")
                         self.player._player_rack.remove(next_letter)
-                        print("removing from rack", self.player._player_rack)
+                        #print("removing from rack", self.player._player_rack)
                         self.extend_right(partial_word + next_letter, current_node.children[next_letter],
                                           self.next_coord(next_pos), True)
-                        print("Exited loop for next_letter")
+                        #print("Exited loop for next_letter")
                         #print("Called extend_after recursivelyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
                         self.player._player_rack.append(next_letter)
-                    else:
-                        print(f"Conditions not met for next_letter: {next_letter}")
+                    #else:
+                        #print(f"Conditions not met for next_letter: {next_letter}")
             else:
                 existing_letter = self.get_tile(next_pos)
                 if existing_letter in current_node.children.keys():
@@ -291,7 +292,7 @@ class AIScrabble(Scrabble):
 class TrieNode:
     def __init__(self, is_word):
         self.is_word = is_word
-        self.children = dict()
+        self.children = defaultdict(lambda: TrieNode(False))
 
 
 class Trie:
@@ -300,8 +301,6 @@ class Trie:
         for word in words:
             current_node = self.root
             for letter in word:
-                if letter not in current_node.children.keys():
-                    current_node.children[letter] = TrieNode(False)
                 current_node = current_node.children[letter]
             current_node.is_word = True
 
