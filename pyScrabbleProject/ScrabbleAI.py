@@ -1,5 +1,6 @@
 import pygame
 import itertools
+from concurrent.futures import ThreadPoolExecutor
 from twl import *
 from gamestate import *
 from scrabble import *
@@ -229,8 +230,8 @@ class AIScrabble(Scrabble):
                         print("Exited loop for next_letter")
                         #print("Called extend_after recursivelyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
                         self.player._player_rack.append(next_letter)
-                    #else:
-                        #print(f"Conditions not met for next_letter: {next_letter}")
+                    else:
+                        print(f"Conditions not met for next_letter: {next_letter}")
             else:
                 existing_letter = self.get_tile(next_pos)
                 if existing_letter in current_node.children.keys():
@@ -239,27 +240,29 @@ class AIScrabble(Scrabble):
         self.memo_extend_after[cache_key] = None
 
     def find_possible_words(self):
-        print("finding all options")
-        self.find_letters_on_board()  # Call to find_letters_on_board here
+        print("finding possible words")
+        self.find_letters_on_board()
         self.print_board_here()
-        for direction in ['across', 'down']:
-            print("for direction in ['across', 'down']:")
+
+        def search_in_direction(direction):
             self.direction = direction
             anchors = self.finding_anchors()
             self.cross_check_results = self.cross_checker()
             for anchor_pos in anchors:
-                print("For anchor pos in anchors")  #works
                 if self.is_filled(self.prev_coord(anchor_pos)):
                     scan_pos = self.prev_coord(anchor_pos)
-                    print("scan_posssssssssssssssssssssss", scan_pos)
                     partial_word = self.get_tile(scan_pos)
                     while self.is_filled(self.prev_coord(scan_pos)):
                         scan_pos = self.prev_coord(scan_pos)
                         partial_word = self.get_tile(scan_pos) + partial_word
-                        print("Partial worddddddddddd", partial_word)
                     pw_node = self.dictionary.search(partial_word)
                     if pw_node is not None:
-                        self.extend_right(partial_word, pw_node, anchor_pos, False)
+                        self.extend_right(
+                            partial_word,
+                            pw_node,
+                            anchor_pos,
+                            False
+                        )
                 else:
                     limit = 0
                     scan_pos = anchor_pos
@@ -267,6 +270,10 @@ class AIScrabble(Scrabble):
                         limit = limit + 1
                         scan_pos = self.prev_coord(scan_pos)
                     self.left_part("", self.dictionary.root, anchor_pos, limit)
+
+        # Use ThreadPoolExecutor to parallelize searches
+        with ThreadPoolExecutor() as executor:
+            executor.map(search_in_direction, ['across', 'down'])
 
 
 class TrieNode:
