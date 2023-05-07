@@ -59,26 +59,6 @@ class AIPlayer(Player):
        # if self.AIscrabbleInstance.submit_turn(tiles):
        #     print(f"AI placed the word '{word}' with a score of {score}.")
 
-    def _score_word_for_best_move(self, SBoard, start, end, letters):
-        """
-        Adds the score of the valid word between start and end.
-        """
-        score = 0
-        multiplier = 1
-        for row in range(start[0], end[0] + 1):
-            for col in range(start[1], end[1] + 1):
-                if (row, col) in letters:
-                    # Check for score modifiers
-                    multiplier *= WORD_MULTIPLIERS.get((row, col), 1)
-                    score += POINTS[letters[(row, col)]]*LETTER_MULTIPLIERS.get((row, col), 1)
-                else:
-                    # Tile must be on board, add it's value
-                    score += POINTS[SBoard[row][col]]
-        self._turn_score = 0
-        self._turn_score += score*multiplier
-        #self.increase_score(self._turn_score)
-        print("Score for this word is:", self._turn_score)
-
 
 AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, 2), num_players=2)
 ai_player = AIPlayer(AIScrabbleInstance)

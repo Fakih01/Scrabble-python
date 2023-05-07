@@ -244,3 +244,21 @@ class Trie:
         #now to figure out way that it acc tells us the words that can be made
         return possible_words_from_letter
 '''
+
+'''    def process_anchor(self, anchor_pos):
+        if self.is_filled(self.prev_coord(anchor_pos)):
+            scan_pos = self.prev_coord(anchor_pos)
+            partial_word = self.get_tile(scan_pos)
+            while self.is_filled(self.prev_coord(scan_pos)):
+                scan_pos = self.prev_coord(scan_pos)
+                partial_word = self.get_tile(scan_pos) + partial_word
+            pw_node = self.dictionary.search(partial_word)
+            if pw_node is not None:
+                self.extend_right(partial_word, pw_node, anchor_pos, False)
+        else:
+            limit = 0
+            scan_pos = anchor_pos
+            while self.is_empty(self.prev_coord(scan_pos)) and self.prev_coord(scan_pos) not in anchors:
+                limit = limit + 1
+                scan_pos = self.prev_coord(scan_pos)
+            self.left_part("", self.dictionary.root, anchor_pos, limit)'''

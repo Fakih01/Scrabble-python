@@ -131,19 +131,54 @@ class AIScrabble(Scrabble):
         print("Rack: ", self.player._player_rack)
         #prints scrabble board to see if same  being used across code.
 
-    def legal_move(self, word, last_pos):
-        print("Rack is", self.player._player_rack)
-        print("LEGAAAAAAAAAAAAAAAALLLLLLLLLLLLLLLL MOVVVVVVVVVVVVVEEEEEEEEEEEEEEEEEE")
-        print('found a word:', word) # need to optimize to run faster. already cached but still slow because of size of word list. also need to optimise based on scores?
-        board_if_we_played_that = self.copy()
-        play_pos = last_pos
-        word_idx = len(word) - 1
-        while word_idx >= 0:
-            board_if_we_played_that.set_tile(play_pos, word[word_idx])
-            word_idx -= 1
-            play_pos = self.prev_coord(play_pos)
-        board_if_we_played_that.print_board_here()
-        print()
+    def legal_move(self, word, last_pos, min_score):
+        word_len = len(word)
+        start = last_pos
+        end = last_pos
+        for _ in range(word_len - 1):
+            start = self.prev_coord(start)
+
+        letters = {}
+        temp_pos = start
+        for letter in word:
+            while self.is_filled(temp_pos):
+                temp_pos = self.next_coord(temp_pos)
+            letters[temp_pos] = letter
+            temp_pos = self.next_coord(temp_pos)
+        score = self._score_word_for_best_move(start, end, letters, word)
+        if score > min_score:
+            print("Rack is", self.player._player_rack)
+            print("LEGAAAAAAAAAAAAAAAALLLLLLLLLLLLLLLL MOVVVVVVVVVVVVVEEEEEEEEEEEEEEEEEE")
+            print('found a word:', word) # need to optimize to run faster. already cached but still slow because of size of word list. also need to optimise based on scores?
+            board_if_we_played_that = self.copy()
+            play_pos = last_pos
+            word_idx = len(word) - 1
+            while word_idx >= 0:
+                board_if_we_played_that.set_tile(play_pos, word[word_idx])
+                word_idx -= 1
+                play_pos = self.prev_coord(play_pos)
+            board_if_we_played_that.print_board_here()
+            print()
+
+    def _score_word_for_best_move(self, start, end, letters, word):
+        """
+        Adds the score of the valid word between start and end.
+        """
+        score = 0
+        multiplier = 1
+        for row in range(start[0], end[0] + 1):
+            for col in range(start[1], end[1] + 1):
+                if (row, col) in letters:
+                    # Check for score modifiers
+                    multiplier *= WORD_MULTIPLIERS.get((row, col), 1)
+                    score += POINTS[letters[(row, col)]]*LETTER_MULTIPLIERS.get((row, col), 1)
+                else:
+                    # Tile must be on board, add it's value
+                    score += POINTS[self.scrabbleInstance.SBoard[row][col]]
+        self.word_score = 0
+        self.word_score += score*multiplier
+        print("Score for this word is:", self.word_score)
+        return self.word_score
 
     def cross_checker(self):
         if self.direction in self.memo_cross_check:
@@ -215,7 +250,7 @@ class AIScrabble(Scrabble):
             return
         if not self.is_filled(next_pos) and current_node.is_word and anchor_filled:
             #print("Calling legal_move from extend_after")
-            self.legal_move(partial_word, self.prev_coord(next_pos))
+            self.legal_move(partial_word, self.prev_coord(next_pos), min_score=12)
             print("Called legal_move from extend_after")
         if self.in_bounds(next_pos):
             if self.is_empty(next_pos):
@@ -241,25 +276,7 @@ class AIScrabble(Scrabble):
                                       self.next_coord(next_pos), True)
         self.memo_extend_after[cache_key] = None
 
-    def process_anchor(self, anchor_pos):
-        if self.is_filled(self.prev_coord(anchor_pos)):
-            scan_pos = self.prev_coord(anchor_pos)
-            partial_word = self.get_tile(scan_pos)
-            while self.is_filled(self.prev_coord(scan_pos)):
-                scan_pos = self.prev_coord(scan_pos)
-                partial_word = self.get_tile(scan_pos) + partial_word
-            pw_node = self.dictionary.search(partial_word)
-            if pw_node is not None:
-                self.extend_right(partial_word, pw_node, anchor_pos, False)
-        else:
-            limit = 0
-            scan_pos = anchor_pos
-            while self.is_empty(self.prev_coord(scan_pos)) and self.prev_coord(scan_pos) not in anchors:
-                limit = limit + 1
-                scan_pos = self.prev_coord(scan_pos)
-            self.left_part("", self.dictionary.root, anchor_pos, limit)
-
-    def find_possible_words(self):
+    def find_possible_words(self, min_score=0):
         print("finding all options")
         self.find_letters_on_board()  # Call to find_letters_on_board here
         for direction in ['across', 'down']:
