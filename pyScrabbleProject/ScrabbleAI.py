@@ -242,6 +242,7 @@ class AIScrabble(Scrabble):
         self.memo_extend_after[cache_key] = None
 
     def process_anchor(self, anchor_pos):
+        anchors = self.finding_anchors()
         if self.is_filled(self.prev_coord(anchor_pos)):
             scan_pos = self.prev_coord(anchor_pos)
             partial_word = self.get_tile(scan_pos)
