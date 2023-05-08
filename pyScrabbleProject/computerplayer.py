@@ -12,7 +12,6 @@ from gamestate import *
 from ScrabbleAI import *
 
 
-
 class AIPlayer(Player):
     def __init__(self, AIscrabbleInstance):
         self.AIscrabbleInstance = AIscrabbleInstance
@@ -30,6 +29,7 @@ class AIPlayer(Player):
 
     def make_ai_move(self):
         self.AIscrabbleInstance.find_possible_words()
+        self.AIscrabbleInstance.make_best_move()
         #rack = self._player_rack
         #words_on_board = self.AIscrabbleInstance.find_words_on_board()
         #letters_on_board = self.AIscrabbleInstance.find_letters_on_board()

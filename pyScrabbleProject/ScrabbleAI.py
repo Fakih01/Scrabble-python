@@ -15,6 +15,10 @@ def ScrabbleDict():
 
 class AIScrabble(Scrabble):
     def __init__(self, debug, scrabbleInstance, num_players):
+        self.this_move_score = 0
+        self.this_move = None
+        self.best_move_score = 0
+        self.best_move = None
         self.cross_check_results = None
         self.scrabbleInstance = scrabbleInstance
         self.direction = None
@@ -147,6 +151,11 @@ class AIScrabble(Scrabble):
             temp_pos = self.next_coord(temp_pos)
         score = self._score_word_for_best_move(start, end, letters, word)
         if score > min_score:
+            self.this_move = (word, start, end, letters)
+            self.this_move_score = score
+            if self.this_move_score > self.best_move_score:
+                self.best_move = self.this_move
+                self.best_move_score = self.this_move_score
             print("Rack is", self.player._player_rack)
             print("LEGAAAAAAAAAAAAAAAALLLLLLLLLLLLLLLL MOVVVVVVVVVVVVVEEEEEEEEEEEEEEEEEE")
             print('found a word:', word) # need to optimize to run faster. already cached but still slow because of size of word list. also need to optimise based on scores?
@@ -158,7 +167,9 @@ class AIScrabble(Scrabble):
                 word_idx -= 1
                 play_pos = self.prev_coord(play_pos)
             board_if_we_played_that.print_board_here()
-            print()
+            print("best move and score are ", self.best_move, self.best_move_score)
+            return self.best_move_score, self.best_move
+        return False
 
     def _score_word_for_best_move(self, start, end, letters, word):
         """
@@ -179,6 +190,15 @@ class AIScrabble(Scrabble):
         self.word_score += score*multiplier
         print("Score for this word is:", self.word_score)
         return self.word_score
+
+    def make_best_move(self):
+        if self.best_move is not None:
+            word, start, end, letters = self.best_move
+            for pos, letter in letters.items():
+                self.set_tile(pos, letter)
+            print(f"Best move is '{word}' with a score of {self.best_move_score}")
+        else:
+            print("No legal move found.")
 
     def cross_checker(self):
         if self.direction in self.memo_cross_check:
