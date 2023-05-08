@@ -285,7 +285,7 @@ class AIScrabble(Scrabble):
             anchors = self.finding_anchors()
             self.cross_check_results = self.cross_checker()
             for anchor_pos in anchors:
-                print("For anchor pos in anchors")  #works
+                #print("For anchor pos in anchors")  #works
                 if self.is_filled(self.prev_coord(anchor_pos)):
                     scan_pos = self.prev_coord(anchor_pos)
                     print("scan_posssssssssssssssssssssssssssssssssssssssssssssssss", scan_pos)
@@ -293,7 +293,7 @@ class AIScrabble(Scrabble):
                     while self.is_filled(self.prev_coord(scan_pos)):
                         scan_pos = self.prev_coord(scan_pos)
                         partial_word = self.get_tile(scan_pos) + partial_word
-                        print("Partial worddddddddddd", partial_word)
+                        #print("Partial worddddddddddd", partial_word)
                     pw_node = self.dictionary.search(partial_word)
                     if pw_node is not None:
                         self.extend_right(partial_word, pw_node, anchor_pos, False)
