@@ -8,6 +8,7 @@ import pygame
 from scoringSystem import *
 from scrabble import *
 import itertools
+import threading
 from gamestate import *
 from ScrabbleAI import *
 
@@ -17,47 +18,10 @@ class AIPlayer(Player):
         self.AIscrabbleInstance = AIscrabbleInstance
         super().__init__()
 
-    def find_best_move(self):
-        print("Searching move")
-        valid_moves = self.AIscrabbleInstance.find_valid_moves()
-
-        if not valid_moves:
-            return None
-
-        best_move = max(valid_moves, key=lambda move: move[0])
-        return best_move
-
     def make_ai_move(self):
         self.AIscrabbleInstance.find_possible_words()
-        self.AIscrabbleInstance.make_best_move()
-        #rack = self._player_rack
-        #words_on_board = self.AIscrabbleInstance.find_words_on_board()
-        #letters_on_board = self.AIscrabbleInstance.find_letters_on_board()
-        # letters_on_board if sboard row col next to letter = None then can use letter otherwise not
-        #for item in words_on_board:
-            #item = item.lower()
-        #AIScrabbleInstance.find_valid_words(item)
-        #AIScrabbleInstance.find_possible_words(item)
-        #valid_words = self.AIscrabbleInstance.find_words_to_play()
-        #print("Words that can be made with rack and board letters: ", valid_words)
-        #for item1 in letters_on_board:
-            #item1 = item1.lower()
-        #AIScrabbleInstance.find_valid_words_from_letters(item1)
-        #AIScrabbleInstance.find_possible_words_from_letters(item1)
-
-
-        #best_move = self.find_best_move()
-
-        #if best_move is None:
-         #   print("No valid moves found for the AI player.")
-          #  return
-
-        #score, word, start_pos, direction = best_move
-        #tiles = [(start_pos[0] + i * direction[0], start_pos[1] + i * direction[1], letter) for i, letter in
-         #        enumerate(word)]
-
-       # if self.AIscrabbleInstance.submit_turn(tiles):
-       #     print(f"AI placed the word '{word}' with a score of {score}.")
+        tiles_to_submit_and_move = self.AIscrabbleInstance.make_best_move()
+        return tiles_to_submit_and_move
 
 
 AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, 2), num_players=2)
@@ -92,7 +56,18 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
     def computer_move(self):
         print("Computer move.")
-        self.players[2].make_ai_move()
+        move_tiles = self.players[2].make_ai_move()
+        # Iterate through the tiles to move
+        for (row, col, letter) in move_tiles:
+            # Search for the tile with the corresponding letter in the player's rack
+            for tile in self.player_tiles:
+                if tile.letter == letter and not tile.on_board:
+                    # Move the tile to the correct position on the board
+                    tile.board_x = row
+                    tile.board_y = col
+                    tile.on_board = True
+                    tile.rect.topleft = tile_to_pixel(row, col)
+                    break
 
     def drawHand(self, scrn):
         '''
@@ -235,22 +210,29 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             currentPlayer.totalScore += self.update_player_score()
             print("total player score for", f"Player {self.currentPlayerKey}", "is", currentPlayer.totalScore)
 
-            # Switch to the other player
-            self.currentPlayerKey = 3 - self.currentPlayerKey
-            self.currentPlayer = self.players[self.currentPlayerKey]
-            if self.currentPlayerKey == 1:
-                print("Player", self.currentPlayerKey, "'s turn!")
-
-            else:
-                self.currentPlayer = self.players[self.currentPlayerKey]
-                print("Computer's turn!")
-                self.computer_move()
-
-                #code for computer turn go here!
-
             self.update_player_tiles()
+
+            # Switch to the other player
+            self.switch_turn()
 
         else:
             # Invalid turn, return all tiles to rack
             for tile in self.player_tiles:
                 tile.rerack()
+
+    def computer_move_thread(self):
+        self.computer_move()
+        self.update_player_tiles()
+
+    def switch_turn(self):
+        self.currentPlayerKey = 3 - self.currentPlayerKey
+        self.currentPlayer = self.players[self.currentPlayerKey]
+        if self.currentPlayerKey == 1:
+            print("Player", self.currentPlayerKey, "'s turn!")
+
+        else:
+            self.currentPlayer = self.players[self.currentPlayerKey]
+            print("Computer's turn!")
+            # Start the computer move in a separate thread
+            computer_move_thread = threading.Thread(target=self.computer_move_thread)
+            computer_move_thread.start()

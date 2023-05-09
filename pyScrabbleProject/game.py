@@ -93,10 +93,12 @@ class ScrabbleGame:
             # Draws state
             screen.fill((0, 0, 0))
             currentState.draw(screen)
-            pygame.display.flip()
 
             # Updating the state
             currentState.update(clock.tick(60) / 1e3)
+
+            pygame.display.flip()
+
 
 
 game = ScrabbleGame()

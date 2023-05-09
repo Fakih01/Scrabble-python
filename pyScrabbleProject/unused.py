@@ -262,3 +262,32 @@ class Trie:
                 limit = limit + 1
                 scan_pos = self.prev_coord(scan_pos)
             self.left_part("", self.dictionary.root, anchor_pos, limit)'''
+
+#rack = self._player_rack
+        #words_on_board = self.AIscrabbleInstance.find_words_on_board()
+        #letters_on_board = self.AIscrabbleInstance.find_letters_on_board()
+        # letters_on_board if sboard row col next to letter = None then can use letter otherwise not
+        #for item in words_on_board:
+            #item = item.lower()
+        #AIScrabbleInstance.find_valid_words(item)
+        #AIScrabbleInstance.find_possible_words(item)
+        #valid_words = self.AIscrabbleInstance.find_words_to_play()
+        #print("Words that can be made with rack and board letters: ", valid_words)
+        #for item1 in letters_on_board:
+            #item1 = item1.lower()
+        #AIScrabbleInstance.find_valid_words_from_letters(item1)
+        #AIScrabbleInstance.find_possible_words_from_letters(item1)
+
+
+        #best_move = self.find_best_move()
+
+        #if best_move is None:
+         #   print("No valid moves found for the AI player.")
+          #  return
+
+        #score, word, start_pos, direction = best_move
+        #tiles = [(start_pos[0] + i * direction[0], start_pos[1] + i * direction[1], letter) for i, letter in
+         #        enumerate(word)]
+
+       # if self.AIscrabbleInstance.submit_turn(tiles):
+       #     print(f"AI placed the word '{word}' with a score of {score}.")

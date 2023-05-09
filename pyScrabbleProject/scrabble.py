@@ -1,6 +1,5 @@
 import itertools
 from random import shuffle
-
 from scoringSystem import *
 import twl
 from gamestate import *
@@ -109,7 +108,7 @@ class Scrabble:
             end = max(rows)
             col = cols[0]
 
-            for row in range(start, end):
+            for row in range(start, end + 1):
                 if row not in rows and self.SBoard[row][col] == None:
                     if self.debug:
                         print("Validation: Tiles are not contiguous")
@@ -120,7 +119,7 @@ class Scrabble:
             end = max(cols)
             row = rows[0]
 
-            for col in range(start, end):
+            for col in range(start, end + 1):
                 if col not in cols and self.SBoard[row][col] == None:
                     if self.debug:
                         print("Validation: Tiles are not contiguous")
@@ -142,6 +141,10 @@ class Scrabble:
             return ret
         else:
             for row, col in places:
+                # Check if the submitted tile is placed on an existing tile
+                if self.SBoard[row][col] is not None:
+                    return True
+
                 # Above
                 if row > 0 and self.SBoard[row - 1][col] is not None:
                     return True

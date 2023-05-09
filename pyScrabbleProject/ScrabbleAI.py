@@ -194,11 +194,14 @@ class AIScrabble(Scrabble):
     def make_best_move(self):
         if self.best_move is not None:
             word, start, end, letters = self.best_move
-            for pos, letter in letters.items():
-                self.set_tile(pos, letter)
+            # Find the letters on the board
+            letters_on_board = self.find_letters_on_board()
+            tiles = [(row, col, letter) for (row, col), letter in letters.items() if
+                     (row, col, letter) not in letters_on_board]
+
+            print("Your tiles for submission are:", tiles)
             print(f"Best move is '{word}' with a score of {self.best_move_score}")
-        else:
-            print("No legal move found.")
+            return tiles
 
     def cross_checker(self):
         if self.direction in self.memo_cross_check:
