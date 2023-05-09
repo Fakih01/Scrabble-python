@@ -20,8 +20,12 @@ class AIPlayer(Player):
 
     def make_ai_move(self):
         self.AIscrabbleInstance.find_possible_words()
-        tiles_to_submit_and_move = self.AIscrabbleInstance.make_best_move()
-        return tiles_to_submit_and_move
+        tiles_to_move_and_submit = self.AIscrabbleInstance.make_best_move()
+        print("Tiles to move and submit", tiles_to_move_and_submit)
+        return tiles_to_move_and_submit
+
+    def submit_ai_move(self):
+        print()
 
 
 AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, 2), num_players=2)
@@ -67,7 +71,8 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                     tile.board_y = col
                     tile.on_board = True
                     tile.rect.topleft = tile_to_pixel(row, col)
-                    break
+
+        self._submit_turn()
 
     def drawHand(self, scrn):
         '''

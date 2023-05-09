@@ -291,3 +291,8 @@ class Trie:
 
        # if self.AIscrabbleInstance.submit_turn(tiles):
        #     print(f"AI placed the word '{word}' with a score of {score}.")
+
+
+'''# Add the tile to game_tiles and remove it from player_tiles
+                    self.game_tiles.append(tile)
+                    self.player_tiles.remove(tile)'''

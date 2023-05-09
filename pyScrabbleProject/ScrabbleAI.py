@@ -2,7 +2,7 @@ import pygame
 import itertools
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from collections import defaultdict
+from collections import defaultdict, Counter
 from twl import *
 from gamestate import *
 from scrabble import *
@@ -145,7 +145,7 @@ class AIScrabble(Scrabble):
         letters = {}
         temp_pos = start
         for letter in word:
-            while self.is_filled(temp_pos):
+            while self.is_filled(temp_pos) and self.get_tile(temp_pos) != letter:
                 temp_pos = self.next_coord(temp_pos)
             letters[temp_pos] = letter
             temp_pos = self.next_coord(temp_pos)
@@ -197,11 +197,16 @@ class AIScrabble(Scrabble):
             # Find the letters on the board
             letters_on_board = self.find_letters_on_board()
             tiles = [(row, col, letter) for (row, col), letter in letters.items() if
-                     (row, col, letter) not in letters_on_board]
+                     ((row, col), letter) not in letters_on_board]
 
             print("Your tiles for submission are:", tiles)
             print(f"Best move is '{word}' with a score of {self.best_move_score}")
+            self.best_move_score = 0
+            self.best_move = None
             return tiles
+
+    def make_first_possible_move(self):
+        return
 
     def cross_checker(self):
         if self.direction in self.memo_cross_check:
