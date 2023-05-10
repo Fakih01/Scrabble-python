@@ -33,6 +33,8 @@ ai_player = AIPlayer(AIScrabbleInstance)
 
 
 class ComputerGame:  # Loads everything necessary and starts the game.
+    min_score = 0
+
     def __init__(self, resourceManagement, ai=False):
         self.player = player
         self.scrabble = Scrabble(True, 2)
@@ -51,6 +53,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         self.currentPlayer = self.players[1]
         self.currentPlayerKey = 1
         self.player_scores = {1: 0, 2: 0}
+        self.scrabble_ai.choose_difficulty()
 
         # Update the initial tiles for both players
         for i, letter in enumerate(self.player.get_rack()):
@@ -58,6 +61,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
 
         self.currentMove = Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i])
+
 
     def computer_move(self):
         print("Computer move.")

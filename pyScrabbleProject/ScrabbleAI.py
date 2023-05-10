@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from collections import defaultdict
 import random
+
 from twl import *
 from gamestate import *
 from scrabble import *
@@ -15,6 +16,8 @@ def ScrabbleDict():
 
 
 class AIScrabble(Scrabble):
+    min_score = 0
+
     def __init__(self, debug, scrabbleInstance, num_players):
         self.possible_moves = []
         self.this_move_score = 0
@@ -31,6 +34,21 @@ class AIScrabble(Scrabble):
         print("word is:", word, "and it is valid!")
         return check(word)
     # need to search board for words and return anagrams first.
+
+    def choose_difficulty(self):
+        while True:
+            level = input("Choose the difficulty level (E for easy, H for hard): ")
+            if level.lower() == "e":
+                print("You have chosen Easy mode.")
+                self.min_score = 2
+                break
+            elif level.lower() == "h":
+                self.min_score = 10
+                print("You have chosen Hard mode.")
+                break
+            else:
+                print("Invalid choice. Please choose either 'E' or 'H'.")
+            return self.min_score
 
     def get_tile(self, pos):
         row, col = pos
@@ -268,7 +286,7 @@ class AIScrabble(Scrabble):
             return
 
         if not self.is_filled(next_pos) and current_node.is_word and anchor_filled:
-            self.legal_move(partial_word, self.prev_coord(next_pos), min_score=12)
+            self.legal_move(partial_word, self.prev_coord(next_pos), self.min_score)
 
         if self.in_bounds(next_pos):
             if self.is_empty(next_pos):
