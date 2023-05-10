@@ -188,6 +188,10 @@ class GameState:  # Loads everything necessary and starts the game.
                 self.player.exchange_tiles(old_tiles)
                 self.update_player_tiles()  # Update player tiles after the exchange
                 print("Your new exchanged tiles are: ", self.player._player_rack)
+            elif evt.key == pygame.K_r:
+                if self.selectedTile:
+                    self.selectedTile.rerack()
+                    self.selectedTile = None
 
     # Add a method to render the score
     def render_score(self, scrn):

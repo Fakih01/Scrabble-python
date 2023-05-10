@@ -2,7 +2,8 @@ import pygame
 import itertools
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from collections import defaultdict, Counter
+from collections import defaultdict
+import random
 from twl import *
 from gamestate import *
 from scrabble import *
@@ -15,10 +16,9 @@ def ScrabbleDict():
 
 class AIScrabble(Scrabble):
     def __init__(self, debug, scrabbleInstance, num_players):
+        self.possible_moves = []
         self.this_move_score = 0
         self.this_move = None
-        self.best_move_score = 0
-        self.best_move = None
         self.cross_check_results = None
         self.scrabbleInstance = scrabbleInstance
         self.direction = None
@@ -153,22 +153,10 @@ class AIScrabble(Scrabble):
         if score > min_score:
             self.this_move = (word, start, end, letters)
             self.this_move_score = score
-            if self.this_move_score > self.best_move_score:
-                self.best_move = self.this_move
-                self.best_move_score = self.this_move_score
-            print("Rack is", self.player._player_rack)
-            print("LEGAAAAAAAAAAAAAAAALLLLLLLLLLLLLLLL MOVVVVVVVVVVVVVEEEEEEEEEEEEEEEEEE")
-            print('found a word:', word) # need to optimize to run faster. already cached but still slow because of size of word list. also need to optimise based on scores?
-            board_if_we_played_that = self.copy()
-            play_pos = last_pos
-            word_idx = len(word) - 1
-            while word_idx >= 0:
-                board_if_we_played_that.set_tile(play_pos, word[word_idx])
-                word_idx -= 1
-                play_pos = self.prev_coord(play_pos)
-            board_if_we_played_that.print_board_here()
-            print("best move and score are ", self.best_move, self.best_move_score)
-            return self.best_move_score, self.best_move
+            self.possible_moves.append((self.this_move, self.this_move_score))
+            print(self.possible_moves)
+            # we return true if a move is found
+            return True
         return False
 
     def _score_word_for_best_move(self, start, end, letters, word):
@@ -191,41 +179,49 @@ class AIScrabble(Scrabble):
         print("Score for this word is:", self.word_score)
         return self.word_score
 
-    def make_best_move(self):
-        if self.best_move is not None:
-            word, start, end, letters = self.best_move
+    def make_random_move(self):
+        if self.possible_moves:  # Check if there are any possible moves
+            move = random.choice(self.possible_moves)  # Select a random move
+            word, start, end, letters = move[0]
             # Find the letters on the board
             letters_on_board = self.find_letters_on_board()
             tiles = [(row, col, letter) for (row, col), letter in letters.items() if
                      ((row, col), letter) not in letters_on_board]
 
             print("Your tiles for submission are:", tiles)
-            print(f"Best move is '{word}' with a score of {self.best_move_score}")
-            self.best_move_score = 0
-            self.best_move = None
+            print(f"Random move is '{word}' with a score of {move[1]}")
+            self.possible_moves = []  # Clear the possible moves for the next round
             return tiles
 
-    def make_first_possible_move(self):
-        return
-
-    def cross_checker(self):
+    def cross_checker(self, anchors):
         if self.direction in self.memo_cross_check:
             return self.memo_cross_check[self.direction]
+
         result = dict()
-        for pos in self.all_positions():
+
+        # Create a list of positions to cross-check
+        positions_to_check = set()
+        for anchor in anchors:
+            positions_to_check.add(anchor)
+            positions_to_check.add(self.prev_coord(anchor))
+            positions_to_check.add(self.next_coord(anchor))
+
+        for pos in positions_to_check:
             if self.is_filled(pos):
-                #print("cross check, is filled")
                 continue
+
             letters_before = ""
             scan_pos = pos
             while self.is_filled(self.prev_cross_coord(scan_pos)):
                 scan_pos = self.prev_cross_coord(scan_pos)
                 letters_before = self.get_tile(scan_pos) + letters_before
+
             letters_after = ""
             scan_pos = pos
             while self.is_filled(self.next_cross_coord(scan_pos)):
                 scan_pos = self.next_cross_coord(scan_pos)
                 letters_after = letters_after + self.get_tile(scan_pos)
+
             if len(letters_before) == 0 and len(letters_after) == 0:
                 legal_here = list('abcdefghijklmnopqrstuvwxyz')
             else:
@@ -234,7 +230,9 @@ class AIScrabble(Scrabble):
                     word_formed = letters_before + letter + letters_after
                     if self.dictionary.is_word(word_formed):
                         legal_here.append(letter)
+
             result[pos] = legal_here
+
         self.memo_cross_check[self.direction] = result
         return result
 
@@ -252,13 +250,7 @@ class AIScrabble(Scrabble):
         return anchors
 
     def left_part(self, partial_word, current_node, anchor_pos, limit):
-        #print("In before_part")
-        #print("partial_word:", partial_word)
-        #print("anchor_pos:", anchor_pos)
-        #print("current_node:", current_node)
-        #print("Calling extend_after from before_part")
         self.extend_right(partial_word, current_node, anchor_pos, False)
-        #print("Called extend_after from before_part")
         if limit > 0:
             for next_letter in current_node.children.keys():
                 if next_letter in self.player._player_rack:
@@ -271,49 +263,39 @@ class AIScrabble(Scrabble):
         cache_key = (partial_word, current_node, next_pos, anchor_filled)
         if cache_key in self.memo_extend_after:
             return self.memo_extend_after[cache_key]
-        #print("In extend_after, checking conditions")
-        #print("anchor_filled:", anchor_filled)
-        # Check if there are enough spaces left on the board to place remaining letters
+
         if len(partial_word) + len(self.player._player_rack) > 14:
             return
+
         if not self.is_filled(next_pos) and current_node.is_word and anchor_filled:
-            #print("Calling legal_move from extend_after")
             self.legal_move(partial_word, self.prev_coord(next_pos), min_score=12)
-            print("Called legal_move from extend_after")
+
         if self.in_bounds(next_pos):
             if self.is_empty(next_pos):
-                #print("Entering loop for next_letter")
-                #print(f"Player rack: {self.player._player_rack}")
-                #print(f"Cross check results for next_pos {next_pos}: {self.cross_check_results[next_pos]}")
                 for next_letter in current_node.children.keys():
-                    if next_letter in self.player._player_rack and next_letter in self.cross_check_results[next_pos]:
-                        #print(f"Conditions met for next_letter: {next_letter}")
+                    if next_letter in self.player._player_rack and next_pos in self.cross_check_results and next_letter in \
+                            self.cross_check_results[next_pos]:
                         self.player._player_rack.remove(next_letter)
-                        #print("removing from rack", self.player._player_rack)
                         self.extend_right(partial_word + next_letter, current_node.children[next_letter],
                                           self.next_coord(next_pos), True)
-                        #print("Exited loop for next_letter")
-                        #print("Called extend_after recursivelyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
                         self.player._player_rack.append(next_letter)
-                    #else:
-                        #print(f"Conditions not met for next_letter: {next_letter}")
             else:
                 existing_letter = self.get_tile(next_pos)
                 if existing_letter in current_node.children.keys():
                     self.extend_right(partial_word + existing_letter, current_node.children[existing_letter],
                                       self.next_coord(next_pos), True)
+
         self.memo_extend_after[cache_key] = None
 
     def find_possible_words(self, min_score=0):
         print("finding all options")
         self.find_letters_on_board()  # Call to find_letters_on_board here
+        word_counter = 0  # Add a counter for words found
         for direction in ['across', 'down']:
-            print("for direction in ['across', 'down']:")
             self.direction = direction
             anchors = self.finding_anchors()
-            self.cross_check_results = self.cross_checker()
+            self.cross_check_results = self.cross_checker(anchors)
             for anchor_pos in anchors:
-                #print("For anchor pos in anchors")  #works
                 if self.is_filled(self.prev_coord(anchor_pos)):
                     scan_pos = self.prev_coord(anchor_pos)
                     print("scan_posssssssssssssssssssssssssssssssssssssssssssssssss", scan_pos)
@@ -321,17 +303,22 @@ class AIScrabble(Scrabble):
                     while self.is_filled(self.prev_coord(scan_pos)):
                         scan_pos = self.prev_coord(scan_pos)
                         partial_word = self.get_tile(scan_pos) + partial_word
-                        #print("Partial worddddddddddd", partial_word)
                     pw_node = self.dictionary.search(partial_word)
                     if pw_node is not None:
-                        self.extend_right(partial_word, pw_node, anchor_pos, False)
+                        if self.extend_right(partial_word, pw_node, anchor_pos, False):
+                            word_counter += 1
+                            if word_counter >= 10:
+                                return
                 else:
                     limit = 0
                     scan_pos = anchor_pos
                     while self.is_empty(self.prev_coord(scan_pos)) and self.prev_coord(scan_pos) not in anchors:
                         limit = limit + 1
                         scan_pos = self.prev_coord(scan_pos)
-                    self.left_part("", self.dictionary.root, anchor_pos, limit)
+                    if self.left_part("", self.dictionary.root, anchor_pos, limit):
+                        word_counter += 1
+                        if word_counter >= 10:
+                            return
 
 
 class TrieNode:

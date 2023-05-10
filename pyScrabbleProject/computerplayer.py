@@ -20,7 +20,7 @@ class AIPlayer(Player):
 
     def make_ai_move(self):
         self.AIscrabbleInstance.find_possible_words()
-        tiles_to_move_and_submit = self.AIscrabbleInstance.make_best_move()
+        tiles_to_move_and_submit = self.AIscrabbleInstance.make_random_move()
         print("Tiles to move and submit", tiles_to_move_and_submit)
         return tiles_to_move_and_submit
 
@@ -38,6 +38,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         self.scrabble = Scrabble(True, 2)
         self.scrabble_ai = AIScrabble(True, self.scrabble, 1)
         self.ai = ai
+        self.ai_player = AIPlayer(AIScrabbleInstance)
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
         self.letterTiles = SpriteSheet('resources/images/LetterSprite.png')
@@ -61,17 +62,25 @@ class ComputerGame:  # Loads everything necessary and starts the game.
     def computer_move(self):
         print("Computer move.")
         move_tiles = self.players[2].make_ai_move()
+        # Skip the turn if no valid move is found
+        if move_tiles is None:
+            print("No valid move found. Skipping turn.")
+            self.switch_turn()
+            return
+
+        used_tiles = set()
         # Iterate through the tiles to move
         for (row, col, letter) in move_tiles:
             # Search for the tile with the corresponding letter in the player's rack
             for tile in self.player_tiles:
-                if tile.letter == letter and not tile.on_board:
+                if tile.letter == letter and not tile.on_board and tile not in used_tiles:
                     # Move the tile to the correct position on the board
                     tile.board_x = row
                     tile.board_y = col
                     tile.on_board = True
                     tile.rect.topleft = tile_to_pixel(row, col)
-
+                    used_tiles.add(tile)
+                    break
         self._submit_turn()
 
     def drawHand(self, scrn):
@@ -138,6 +147,10 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 self.player.exchange_tiles(old_tiles)
                 self.update_player_tiles()  # Update player tiles after the exchange
                 print("Your new exchanged tiles are: ", self.player._player_rack)
+            elif evt.key == pygame.K_r:
+                if self.selectedTile:
+                    self.selectedTile.rerack()
+                    self.selectedTile = None
 
     # Add a method to render the score
     def render_score(self, scrn):
@@ -224,6 +237,9 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             # Invalid turn, return all tiles to rack
             for tile in self.player_tiles:
                 tile.rerack()
+            if self.currentPlayerKey == 2:
+                print("Computer tries again!")
+                self.ai_player.make_ai_move()
 
     def computer_move_thread(self):
         self.computer_move()
