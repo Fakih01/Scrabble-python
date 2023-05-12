@@ -214,8 +214,11 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
         # Create a game over surface and position it in the middle of the screen
         font = pygame.font.Font('freesansbold.ttf', 64)
+        font2 = pygame.font.Font('freesansbold.ttf', 44)
         game_over_surface = font.render("Game Over", True, (0, 0, 0))
         game_over_rect = game_over_surface.get_rect(center=(400, 400))
+        text_surface = font2.render("Press 'ESC' to close screen", True, (0, 0, 0))
+        text_surface_rect = text_surface.get_rect(center=(500, 500))
 
         while not self.running:
             for event in pygame.event.get():
@@ -224,7 +227,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                     sys.exit()
 
             # Draw the game over surface
-            self.screen.blit(game_over_surface, game_over_rect)
+            self.screen.blit(game_over_surface, game_over_rect, text_surface, text_surface_rect)
 
     def draw(self, scrn):
         self.board.draw(scrn, self.currentMove)
