@@ -36,6 +36,8 @@ class ComputerGame:  # Loads everything necessary and starts the game.
     min_score = 0
 
     def __init__(self, resourceManagement, ai=False):
+        self.Computer_skips = 0
+        self.Computer_exchanges = 0
         self.player = player
         self.scrabble = Scrabble(True, 2)
         self.scrabble_ai = AIScrabble(True, self.scrabble, 1)
@@ -53,7 +55,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         self.currentPlayer = self.players[1]
         self.currentPlayerKey = 1
         self.player_scores = {1: 0, 2: 0}
-        self.scrabble_ai.choose_difficulty()
+        self.screen = pygame.display.set_mode((1000, 800))
 
         # Update the initial tiles for both players
         for i, letter in enumerate(self.player.get_rack()):
@@ -62,14 +64,31 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
         self.currentMove = Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i])
 
-
     def computer_move(self):
         print("Computer move.")
-        move_tiles = self.players[2].make_ai_move()
-        # Skip the turn if no valid move is found
+        for _ in range(5):  # Try to make a move 5 times
+            move_tiles = self.players[2].make_ai_move()
+            if move_tiles is not None:
+                break  # If a valid move is found, break the loop
+
+        # If no valid move is found after 5 tries, check if it's possible to exchange tiles
+        if move_tiles is None and self.Computer_exchanges < 6:  # If not yet reached the limit of exchanges
+            print("No valid move found after 5 tries, exchange tiles and try again.")
+            old_tiles = self.players[2]._player_rack
+            self.players[2].exchange_tiles(old_tiles)
+            self.update_player_tiles()
+            self.Computer_exchanges += 1
+            move_tiles = self.players[2].make_ai_move()
+
+        # If no valid move is found after retrying, skip the turn
         if move_tiles is None:
-            print("No valid move found. Skipping turn.")
-            self.switch_turn()
+            if self.Computer_skips < 6:  # If not yet reached the limit of skips
+                print("No valid move found after exchanging tiles. Skipping turn.")
+                self.Computer_skips += 1
+                self.switch_turn()
+            else:  # If reached the limit of skips
+                print("No valid move found and skip limit reached. Game over.")
+                self.game_over()
             return
 
         used_tiles = set()
@@ -178,6 +197,27 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         turn_surface = font.render(turn_text, True, (255, 255, 255))
         scrn.blit(turn_surface, (770, 20))
 
+    def game_over(self):
+        print("Game Over!")
+        # Stop the game loop
+        self.running = False
+
+        # Create a game over surface and position it in the middle of the screen
+        font = pygame.font.Font('freesansbold.ttf', 64)
+        game_over_surface = font.render("Game Over", True, (255, 255, 255))
+        game_over_rect = game_over_surface.get_rect(center=(400, 400))
+
+        while not self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            # Draw the game over surface
+            self.screen.blit(game_over_surface, game_over_rect)
+
+            pygame.display.flip()  # Update the display
+
     def draw(self, scrn):
         self.board.draw(scrn, self.currentMove)
         self.render_score(scrn)
@@ -243,7 +283,8 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 tile.rerack()
             if self.currentPlayerKey == 2:
                 print("Computer tries again!")
-                self.ai_player.make_ai_move()
+                self.computer_move()
+                #self.Computer_exchanges +=1
 
     def computer_move_thread(self):
         self.computer_move()
@@ -261,3 +302,5 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             # Start the computer move in a separate thread
             computer_move_thread = threading.Thread(target=self.computer_move_thread)
             computer_move_thread.start()
+
+

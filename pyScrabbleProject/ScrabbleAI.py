@@ -35,21 +35,6 @@ class AIScrabble(Scrabble):
         return check(word)
     # need to search board for words and return anagrams first.
 
-    def choose_difficulty(self):
-        while True:
-            level = input("Choose the difficulty level (E for easy, H for hard): ")
-            if level.lower() == "e":
-                print("You have chosen Easy mode.")
-                self.min_score = 2
-                break
-            elif level.lower() == "h":
-                self.min_score = 10
-                print("You have chosen Hard mode.")
-                break
-            else:
-                print("Invalid choice. Please choose either 'E' or 'H'.")
-            return self.min_score
-
     def get_tile(self, pos):
         row, col = pos
         tile = self.scrabbleInstance.SBoard[row][col]
@@ -325,7 +310,7 @@ class AIScrabble(Scrabble):
                     if pw_node is not None:
                         if self.extend_right(partial_word, pw_node, anchor_pos, False):
                             word_counter += 1
-                            if word_counter >= 10:
+                            if word_counter >= 5:
                                 return
                 else:
                     limit = 0
@@ -335,7 +320,7 @@ class AIScrabble(Scrabble):
                         scan_pos = self.prev_coord(scan_pos)
                     if self.left_part("", self.dictionary.root, anchor_pos, limit):
                         word_counter += 1
-                        if word_counter >= 10:
+                        if word_counter >= 5:
                             return
 
 
