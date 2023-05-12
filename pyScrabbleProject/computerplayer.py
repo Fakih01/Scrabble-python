@@ -36,6 +36,8 @@ class ComputerGame:  # Loads everything necessary and starts the game.
     min_score = 0
 
     def __init__(self, resourceManagement, ai=False):
+        self.player_exchange = 0
+        self.player_skip = 0
         self.Computer_skips = 0
         self.Computer_exchanges = 0
         self.player = player
@@ -74,6 +76,8 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         # If no valid move is found after 5 tries, check if it's possible to exchange tiles
         if move_tiles is None and self.Computer_exchanges < 6:  # If not yet reached the limit of exchanges
             print("No valid move found after 5 tries, exchange tiles and try again.")
+            print("Computer exchanges =", self.Computer_exchanges)
+
             old_tiles = self.players[2]._player_rack
             self.players[2].exchange_tiles(old_tiles)
             self.update_player_tiles()
@@ -85,6 +89,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             if self.Computer_skips < 6:  # If not yet reached the limit of skips
                 print("No valid move found after exchanging tiles. Skipping turn.")
                 self.Computer_skips += 1
+                print("Computer skips =", self.Computer_skips)
                 self.switch_turn()
             else:  # If reached the limit of skips
                 print("No valid move found and skip limit reached. Game over.")
@@ -130,6 +135,10 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         self.runni_score = 0
 
     def handle_event(self, evt):
+        if evt.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
         if evt.type == pygame.MOUSEBUTTONUP:
             position = list(pygame.mouse.get_pos())
             if position in self.board:
@@ -170,6 +179,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 self.player.exchange_tiles(old_tiles)
                 self.update_player_tiles()  # Update player tiles after the exchange
                 print("Your new exchanged tiles are: ", self.player._player_rack)
+                self.player_exchange += 1
             elif evt.key == pygame.K_r:
                 if self.selectedTile:
                     self.selectedTile.rerack()
@@ -204,7 +214,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
         # Create a game over surface and position it in the middle of the screen
         font = pygame.font.Font('freesansbold.ttf', 64)
-        game_over_surface = font.render("Game Over", True, (255, 255, 255))
+        game_over_surface = font.render("Game Over", True, (0, 0, 0))
         game_over_rect = game_over_surface.get_rect(center=(400, 400))
 
         while not self.running:
@@ -215,8 +225,6 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
             # Draw the game over surface
             self.screen.blit(game_over_surface, game_over_rect)
-
-            pygame.display.flip()  # Update the display
 
     def draw(self, scrn):
         self.board.draw(scrn, self.currentMove)
