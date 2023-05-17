@@ -7,14 +7,17 @@ import deck
 import pygame
 from scoringSystem import *
 from scrabble import *
+from player import *
 from gamestate import *
 
 
 class TwoPlayerGame:  # Loads everything necessary and starts the game.
-    def __init__(self, resourceManagement, ai=False):
-        self.player = player
-        self.scrabble = Scrabble(True, 2)
-        self.ai = ai
+    def __init__(self, resourceManagement):
+        self.bag = Bag()
+        self.players = {1: Player(self.bag), 2: Player(self.bag)}
+        self.Player_skip = 0
+        self.player_exchange = 0
+        self.scrabble = Scrabble(True, self.players, 2)
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
         self.letterTiles = SpriteSheet('resources/images/LetterSprite.png')
@@ -24,13 +27,14 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         self.game_tiles = []
         self.running_score = 0
         # Initialize two players
-        self.players = {1: Player(), 2: Player()}
         self.currentPlayer = self.players[1]
         self.currentPlayerKey = 1
         self.player_scores = {1: 0, 2: 0}
+        self.screen = pygame.display.set_mode((1000, 800))
+
 
         # Update the initial tiles for both players
-        for i, letter in enumerate(self.player.get_rack()):
+        for i, letter in enumerate(self.currentPlayer.get_rack()):
             self.player_tiles.append(
                 Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
 
@@ -48,11 +52,11 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
 
     def update_player_tiles(self):
         self.player_tiles = []
-        for i, letter in enumerate(self.player.get_rack()):
+        for i, letter in enumerate(self.currentPlayer.get_rack()):
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
     def update_player_score(self):
-        score = self.player.get_turn_score()
+        score = self.currentPlayer.get_turn_score()
         self.player_scores[self.currentPlayerKey] += score
         return score
 
@@ -60,6 +64,11 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         self.runni_score = 0
 
     def handle_event(self, evt):
+
+        if evt.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
         if evt.type == pygame.MOUSEBUTTONUP:
             position = list(pygame.mouse.get_pos())
             if position in self.board:
@@ -96,10 +105,15 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
             elif evt.key == pygame.K_p:
                 self.scrabble._print_board()
             elif evt.key == pygame.K_e:
-                old_tiles = self.player._player_rack
-                self.player.exchange_tiles(old_tiles)
+                old_tiles = self.currentPlayer._player_rack
+                self.currentPlayer.exchange_tiles(old_tiles)
+                self.scrabble.players[self.currentPlayerKey].exchange_tiles(old_tiles)
                 self.update_player_tiles()  # Update player tiles after the exchange
-                print("Your new exchanged tiles are: ", self.player._player_rack)
+                print("Your new exchanged tiles are: ", self.currentPlayer._player_rack)
+                self.player_exchange +=1
+                self.scrabble.switch_turn()
+                self.switch_turn()
+                self.update_player_tiles()
             elif evt.key == pygame.K_r:
                 if self.selectedTile:
                     self.selectedTile.rerack()
@@ -130,7 +144,6 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         self.render_turn(scrn)
         self.drawHand(scrn)
 
-
     def update(self, delta):
         '''
         Updates the state as a whole.
@@ -146,6 +159,28 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
                 print("tilehit")
                 return True
         return False
+
+    def game_over(self):
+        print("Game Over!")
+        # Stop the game loop
+        self.running = False
+
+        # Create a game over surface and position it in the middle of the screen
+        font = pygame.font.Font('freesansbold.ttf', 64)
+        font2 = pygame.font.Font('freesansbold.ttf', 44)
+        game_over_surface = font.render("Game Over", True, (0, 0, 0))
+        game_over_rect = game_over_surface.get_rect(center=(400, 400))
+        text_surface = font2.render("Press 'ESC' to close screen", True, (0, 0, 0))
+        text_surface_rect = text_surface.get_rect(center=(500, 500))
+
+        while not self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            # Draw the game over surface
+            self.screen.blit(game_over_surface, game_over_rect, text_surface, text_surface_rect)
 
     def _submit_turn(self):
         """
@@ -178,14 +213,21 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
                 currentPlayer.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
             currentPlayer.totalScore += self.update_player_score()
             print("total player score for", f"Player {self.currentPlayerKey}", "is", currentPlayer.totalScore)
-
-            # Switch to the other player
-            self.currentPlayerKey = 3 - self.currentPlayerKey
-            self.currentPlayer = self.players[self.currentPlayerKey]
-            print("Player", self.currentPlayerKey, "'s turn!")
+            self.update_player_tiles()
+            self.switch_turn()
             self.update_player_tiles()
 
         else:
             # Invalid turn, return all tiles to rack
             for tile in self.player_tiles:
                 tile.rerack()
+
+    def switch_turn(self):
+        self.currentPlayerKey = 3 - self.currentPlayerKey
+        self.currentPlayer = self.players[self.currentPlayerKey]
+        if self.currentPlayerKey == 1:
+            print("Player", self.currentPlayerKey, "'s turn!")
+
+        else:
+            self.currentPlayer = self.players[self.currentPlayerKey]
+            print("Player", self.currentPlayerKey, "'s turn!")

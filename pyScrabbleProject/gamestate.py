@@ -4,10 +4,11 @@ from random import shuffle
 from LettersSpritesheet import SpriteSheet
 import resourceFile
 from board import ScrabbleBoard as SB
-import deck
 import pygame
+
+from pyScrabbleProject.player import Player
 from scoringSystem import *
-from scrabble import Scrabble, player
+from scrabble import *
 
 
 # The rest is code where you implement your game using the Scenes model
@@ -46,8 +47,6 @@ class Tile(pygame.sprite.Sprite):
         self.on_board = False  # changed to true and printed a bunch of stuff
         self.m = []
         self.UsedLetters = []
-        #self.SBoardInstance = SBoardInstance
-        #self.bTiles = SBoardInstance.SBoard
         self.submitted = False
 
     def add_move(self, x, y, letter, pos):
@@ -114,23 +113,27 @@ class Tile(pygame.sprite.Sprite):
 
 
 class GameState:  # Loads everything necessary and starts the game.
-    def __init__(self, resourceManagement, ai=False):
-        self.rackList = []
-        self.scrabble = Scrabble(True, 1)
-        self.ai = ai
+    def __init__(self, resourceManagement):
+        self.bag = Bag()
+        self.player = Player(self.bag)
+        self.scrabble = Scrabble(True, self.player, 1)
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
         self.letterTiles = SpriteSheet('resources/images/LetterSprite.png')
         self.selectedTile = None    # Selected tile should be a letter only
         self.player_tiles = []
         self.game_tiles = []
-        self.player = player
-        #self.update_player_tiles()
+
+
 
         for i, letter in enumerate(self.player.get_rack()):
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
+        self.get_racky()
 
         self.currentMove = Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i])
+
+    def get_racky(self):
+        print("racky is", self.player._player_rack)
 
     def drawHand(self, scrn):
         '''
@@ -141,6 +144,9 @@ class GameState:  # Loads everything necessary and starts the game.
 
         for tile in self.game_tiles:
             scrn.blit(tile.tileBlock, tile.rect)
+
+    def pass_rack(self):
+        return
 
     def update_player_tiles(self):
         self.player_tiles = []
@@ -205,12 +211,6 @@ class GameState:  # Loads everything necessary and starts the game.
         self.board.draw(scrn, self.currentMove)
         self.render_score(scrn)
         self.drawHand(scrn)
-
-    def return_tiles_to_rack(self):
-        for x, y, letter in self.currentMove.m:
-            self.player._player_rack.append(letter)
-            self.board.board_tiles[x][y] = None
-        self.currentMove.m.clear()
 
     def update(self, delta):
         '''

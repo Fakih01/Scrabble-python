@@ -11,12 +11,14 @@ import itertools
 import threading
 from gamestate import *
 from ScrabbleAI import *
+from player import *
 
 
 class AIPlayer(Player):
     def __init__(self, AIscrabbleInstance):
         self.AIscrabbleInstance = AIscrabbleInstance
-        super().__init__()
+        self.bag = Bag()
+        super().__init__(self.bag)
 
     def make_ai_move(self):
         self.AIscrabbleInstance.find_possible_words()
@@ -24,43 +26,46 @@ class AIPlayer(Player):
         print("Tiles to move and submit", tiles_to_move_and_submit)
         return tiles_to_move_and_submit
 
-    def submit_ai_move(self):
-        print()
 
-
-AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, 2), num_players=2)
+AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, Player(Bag()), num_players=2))
 ai_player = AIPlayer(AIScrabbleInstance)
 
 
 class ComputerGame:  # Loads everything necessary and starts the game.
     min_score = 0
 
-    def __init__(self, resourceManagement, ai=False):
+    def __init__(self, resourceManagement):
+        self.Player_help = 0
         self.player_exchange = 0
         self.player_skip = 0
         self.Computer_skips = 0
         self.Computer_exchanges = 0
-        self.player = player
-        self.scrabble = Scrabble(True, 2)
-        self.scrabble_ai = AIScrabble(True, self.scrabble, 1)
-        self.ai = ai
-        self.ai_player = AIPlayer(AIScrabbleInstance)
+        self.bag = Bag()
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
         self.letterTiles = SpriteSheet('resources/images/LetterSprite.png')
-        self.selectedTile = None    # Selected tile should be a letter only
+        self.selectedTile = None  # Selected tile should be a letter only
         self.player_tiles = []
         self.game_tiles = []
         self.running_score = 0
-        # Initialize two players
-        self.players = {1: Player(), 2: AIPlayer(self.scrabble_ai)}
+
+        # Initialize players
+        self.players = {1: Player(self.bag), 2: None}  # We'll set player 2 (AI player) later
         self.currentPlayer = self.players[1]
         self.currentPlayerKey = 1
         self.player_scores = {1: 0, 2: 0}
         self.screen = pygame.display.set_mode((1000, 800))
 
+        # Create scrabble instance
+        self.scrabble = Scrabble(True, self.players, 2)
+
+        # Now that we have a scrabble instance, we can create an AIPlayer with AIScrabble
+        self.scrabble_ai = AIScrabble(True, self.scrabble)
+        self.ai_player = AIPlayer(self.scrabble_ai)
+        self.players[2] = self.ai_player  # Now we set player 2 to be the AI player
+
         # Update the initial tiles for both players
-        for i, letter in enumerate(self.player.get_rack()):
+        for i, letter in enumerate(self.currentPlayer.get_rack()):
             self.player_tiles.append(
                 Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
 
@@ -83,6 +88,11 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             self.update_player_tiles()
             self.Computer_exchanges += 1
             move_tiles = self.players[2].make_ai_move()
+        if move_tiles is not None:
+            print("computer move = ", move_tiles)
+            self.handle_ai_moves(move_tiles)
+            self._submit_turn()
+            return
 
         # If no valid move is found after retrying, skip the turn
         if move_tiles is None:
@@ -96,6 +106,8 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 self.game_over()
             return
 
+    def handle_ai_moves(self, move_tiles):
+        print("move tiles are", move_tiles)
         used_tiles = set()
         # Iterate through the tiles to move
         for (row, col, letter) in move_tiles:
@@ -109,7 +121,6 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                     tile.rect.topleft = tile_to_pixel(row, col)
                     used_tiles.add(tile)
                     break
-        self._submit_turn()
 
     def drawHand(self, scrn):
         '''
@@ -123,16 +134,13 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
     def update_player_tiles(self):
         self.player_tiles = []
-        for i, letter in enumerate(self.player.get_rack()):
+        for i, letter in enumerate(self.currentPlayer.get_rack()):
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
     def update_player_score(self):
-        score = self.player.get_turn_score()
+        score = self.currentPlayer.get_turn_score()
         self.player_scores[self.currentPlayerKey] += score
         return score
-
-    def total_player_score(self):
-        self.runni_score = 0
 
     def handle_event(self, evt):
         if evt.type == pygame.QUIT:
@@ -175,15 +183,24 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             elif evt.key == pygame.K_p:
                 self.scrabble._print_board()
             elif evt.key == pygame.K_e:
-                old_tiles = self.player._player_rack
-                self.player.exchange_tiles(old_tiles)
+                old_tiles = self.currentPlayer._player_rack
+                self.currentPlayer.exchange_tiles(old_tiles)
                 self.update_player_tiles()  # Update player tiles after the exchange
-                print("Your new exchanged tiles are: ", self.player._player_rack)
+                print("Your new exchanged tiles are: ", self.currentPlayer._player_rack)
+                print("Switching turns")
                 self.player_exchange += 1
+                self.switch_turn()
             elif evt.key == pygame.K_r:
                 if self.selectedTile:
                     self.selectedTile.rerack()
                     self.selectedTile = None
+            elif evt.key == pygame.K_s:
+                print("You have skipped your turn")
+                self.switch_turn()
+                self.player_skip += 1
+            elif evt.key == pygame.K_h:
+                print("You have asked for help")
+                self.Player_help += 1
 
     # Add a method to render the score
     def render_score(self, scrn):
@@ -281,12 +298,12 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             for i, letter in enumerate(currentPlayer.get_rack()):
                 currentPlayer.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
             currentPlayer.totalScore += self.update_player_score()
-            print("total player score for", f"Player {self.currentPlayerKey}", "is", currentPlayer.totalScore)
 
             self.update_player_tiles()
 
             # Switch to the other player
             self.switch_turn()
+            self.scrabble_ai.clear_possible_moves()
 
         else:
             # Invalid turn, return all tiles to rack

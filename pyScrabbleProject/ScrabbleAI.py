@@ -18,7 +18,7 @@ def ScrabbleDict():
 class AIScrabble(Scrabble):
     min_score = 0
 
-    def __init__(self, debug, scrabbleInstance, num_players):
+    def __init__(self, debug, scrabbleInstance):
         self.possible_moves = []
         self.this_move_score = 0
         self.this_move = None
@@ -26,9 +26,12 @@ class AIScrabble(Scrabble):
         self.scrabbleInstance = scrabbleInstance
         self.direction = None
         self.dictionary = ScrabbleDict()
-        self.memo_cross_check = {}
-        self.memo_extend_after = {}
-        super().__init__(debug, num_players)
+        self.bag = Bag()
+        self.player = Player(self.bag)
+        super().__init__(debug, self.player, 2)
+
+    def set_players(self, players):
+        self.players = players
 
     def _is_valid_word(self, word):
         print("word is:", word, "and it is valid!")
@@ -78,7 +81,7 @@ class AIScrabble(Scrabble):
 
     def copy(self):
         # Create a new AIScrabble instance with the same debug and num_players settings
-        new_instance = AIScrabble(debug=True,scrabbleInstance=Scrabble(True, 2), num_players=2)
+        new_instance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, ), num_players=2)
 
         # Set the tiles in the new_instance based on the current instance's tiles
         for pos in self.all_positions():
@@ -157,7 +160,7 @@ class AIScrabble(Scrabble):
             self.this_move = (word, start, end, letters)
             self.this_move_score = score
             self.possible_moves.append((self.this_move, self.this_move_score))
-            print(self.possible_moves)
+            print("These are the possible moves:", self.possible_moves)
             # we return true if a move is found
             return True
         return False
@@ -184,7 +187,9 @@ class AIScrabble(Scrabble):
 
     def make_random_move(self):
         if self.possible_moves:  # Check if there are any possible moves
+            print("make random move possible moves= ", self.possible_moves)
             move = random.choice(self.possible_moves)  # Select a random move
+            print("chosen move = ", move)
             word, start, end, letters = move[0]
             # Find the letters on the board
             letters_on_board = self.find_letters_on_board()
@@ -193,13 +198,15 @@ class AIScrabble(Scrabble):
 
             print("Your tiles for submission are:", tiles)
             print(f"Random move is '{word}' with a score of {move[1]}")
-            self.possible_moves = []  # Clear the possible moves for the next round
             return tiles
 
-    def cross_checker(self, anchors):
-        if self.direction in self.memo_cross_check:
-            return self.memo_cross_check[self.direction]
+        else:
+            print("No moves found.")
 
+    def clear_possible_moves(self):
+        self.possible_moves = []  # Clear the possible moves for the next round
+
+    def cross_checker(self, anchors):
         result = dict()
 
         # Create a list of positions to cross-check
@@ -236,7 +243,6 @@ class AIScrabble(Scrabble):
 
             result[pos] = legal_here
 
-        self.memo_cross_check[self.direction] = result
         return result
 
     def finding_anchors(self):
@@ -264,8 +270,6 @@ class AIScrabble(Scrabble):
 
     def extend_right(self, partial_word, current_node, next_pos, anchor_filled):
         cache_key = (partial_word, current_node, next_pos, anchor_filled)
-        if cache_key in self.memo_extend_after:
-            return self.memo_extend_after[cache_key]
 
         if len(partial_word) + len(self.player._player_rack) > 14:
             return
@@ -288,7 +292,6 @@ class AIScrabble(Scrabble):
                     self.extend_right(partial_word + existing_letter, current_node.children[existing_letter],
                                       self.next_coord(next_pos), True)
 
-        self.memo_extend_after[cache_key] = None
 
     def find_possible_words(self, min_score=0):
         print("finding all options")

@@ -12,7 +12,7 @@ class ScrabbleGame:
 
         self.resourceManagement = resourceFile.ResourceManager()
 
-    def play(self, ai):  # Manages game states
+    def play(self):  # Manages game states
 
         # Constants
         SIZE = (1000, 800)
@@ -21,7 +21,7 @@ class ScrabbleGame:
         screen = pygame.display.set_mode(SIZE)
         clock = pygame.time.Clock()
         running = True
-        currentState = gs.GameState(self.resourceManagement, ai)  # reference to the GameState class
+        currentState = gs.GameState(self.resourceManagement)  # reference to the GameState class
 
         pygame.display.set_caption("Scrabble Game")
 
@@ -41,7 +41,7 @@ class ScrabbleGame:
             # Updating the state
             currentState.update(clock.tick(60) / 1e3)
 
-    def TwoPlayer(self, ai):  # Manages game states
+    def TwoPlayer(self):  # Manages game states
 
         # Constants
         SIZE = (1000, 800)
@@ -50,7 +50,7 @@ class ScrabbleGame:
         screen = pygame.display.set_mode(SIZE)
         clock = pygame.time.Clock()
         running = True
-        currentState = TwoPlayerMode.TwoPlayerGame(self.resourceManagement, ai)  # reference to the TP class
+        currentState = TwoPlayerMode.TwoPlayerGame(self.resourceManagement)  # reference to the TP class
 
         pygame.display.set_caption("Scrabble Game")
 
@@ -70,7 +70,7 @@ class ScrabbleGame:
             # Updating the state
             currentState.update(clock.tick(60) / 1e3)
 
-    def CompPlayer(self, ai):  # Manages game states
+    def CompPlayer(self):  # Manages game states
 
         # Constants
         SIZE = (1000, 800)
@@ -79,7 +79,7 @@ class ScrabbleGame:
         screen = pygame.display.set_mode(SIZE)
         clock = pygame.time.Clock()
         running = True
-        currentState = computerplayer.ComputerGame(self.resourceManagement, ai)  # reference to the CP class
+        currentState = computerplayer.ComputerGame(self.resourceManagement)  # reference to the CP class
 
         pygame.display.set_caption("Scrabble Game")
 
@@ -126,21 +126,21 @@ class StartPage(SceneBase):
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 # Move to the next scene when the user pressed Enter
-                self.SwitchToScene(game.play(False))
+                self.SwitchToScene(game.play())
                 self.needs_update = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
                 # Move to the next scene when the user pressed Enter
-                self.SwitchToScene(game.TwoPlayer(False))
+                self.SwitchToScene(game.TwoPlayer())
                 self.needs_update = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
                 self.show_difficulty_popup = True  # show the popup when 'c' is pressed
                 self.needs_update = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-                self.SwitchToScene(game.CompPlayer(False))
+                self.SwitchToScene(game.CompPlayer())
                 AIScrabble.min_score = 0
                 self.needs_update = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
-                self.SwitchToScene(game.CompPlayer(False))
+                self.SwitchToScene(game.CompPlayer())
                 AIScrabble.min_score = 10
                 self.needs_update = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_h:
