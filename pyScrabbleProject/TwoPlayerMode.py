@@ -118,6 +118,12 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
                 if self.selectedTile:
                     self.selectedTile.rerack()
                     self.selectedTile = None
+            elif self.selectedTile and self.selectedTile.is_blank and evt.unicode.isalpha():
+                letter = evt.unicode.lower()
+                self.selectedTile.letter = letter
+                self.selectedTile.tileBlock = self.letterTiles.image_at(LETTER_COORDINATES[letter])
+                blank_index = self.player_tiles.index(self.selectedTile)
+                self.currentPlayer._player_rack[blank_index] = letter
 
     # Add a method to render the score
     def render_score(self, scrn):

@@ -46,6 +46,7 @@ class Tile(pygame.sprite.Sprite):
         self.tray_position = location
         self.on_board = False  # changed to true and printed a bunch of stuff
         self.m = []
+        self.is_blank = (letter == ' ')
         self.UsedLetters = []
         self.submitted = False
 
@@ -124,16 +125,11 @@ class GameState:  # Loads everything necessary and starts the game.
         self.player_tiles = []
         self.game_tiles = []
 
-
-
         for i, letter in enumerate(self.player.get_rack()):
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
-        self.get_racky()
+
 
         self.currentMove = Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i])
-
-    def get_racky(self):
-        print("racky is", self.player._player_rack)
 
     def drawHand(self, scrn):
         '''
@@ -198,6 +194,13 @@ class GameState:  # Loads everything necessary and starts the game.
                 if self.selectedTile:
                     self.selectedTile.rerack()
                     self.selectedTile = None
+            # Add the following lines to handle when a blank tile is selected and a letter key is pressed
+            elif self.selectedTile and self.selectedTile.is_blank and evt.unicode.isalpha():
+                letter = evt.unicode.lower()
+                self.selectedTile.letter = letter
+                self.selectedTile.tileBlock = self.letterTiles.image_at(LETTER_COORDINATES[letter])
+                blank_index = self.player_tiles.index(self.selectedTile)
+                self.player._player_rack[blank_index] = letter
 
     # Add a method to render the score
     def render_score(self, scrn):
