@@ -5,6 +5,7 @@ from functools import partial
 from collections import defaultdict
 import random
 
+from pyScrabbleProject.player import Bag
 from twl import *
 from gamestate import *
 from scrabble import *

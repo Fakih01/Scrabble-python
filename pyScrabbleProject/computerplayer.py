@@ -15,10 +15,9 @@ from player import *
 
 
 class AIPlayer(Player):
-    def __init__(self, AIscrabbleInstance):
+    def __init__(self, bag, AIscrabbleInstance):
         self.AIscrabbleInstance = AIscrabbleInstance
-        self.bag = Bag()
-        super().__init__(self.bag)
+        super().__init__(bag)
 
     def make_ai_move(self):
         self.AIscrabbleInstance.find_possible_words()
@@ -28,7 +27,6 @@ class AIPlayer(Player):
 
 
 AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, Player(Bag()), num_players=2))
-ai_player = AIPlayer(AIScrabbleInstance)
 
 
 class ComputerGame:  # Loads everything necessary and starts the game.
@@ -61,7 +59,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
         # Now that we have a scrabble instance, we can create an AIPlayer with AIScrabble
         self.scrabble_ai = AIScrabble(True, self.scrabble)
-        self.ai_player = AIPlayer(self.scrabble_ai)
+        self.ai_player = AIPlayer(self.bag, self.scrabble_ai)
         self.players[2] = self.ai_player  # Now we set player 2 to be the AI player
 
         # Update the initial tiles for both players
@@ -82,19 +80,13 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         if move_tiles is None and self.Computer_exchanges < 6:  # If not yet reached the limit of exchanges
             print("No valid move found after 5 tries, exchange tiles and try again.")
             print("Computer exchanges =", self.Computer_exchanges)
-
             old_tiles = self.players[2]._player_rack
             self.players[2].exchange_tiles(old_tiles)
             self.update_player_tiles()
             self.Computer_exchanges += 1
             move_tiles = self.players[2].make_ai_move()
-        if move_tiles is not None:
-            print("computer move = ", move_tiles)
-            self.handle_ai_moves(move_tiles)
-            self._submit_turn()
-            return
-
         # If no valid move is found after retrying, skip the turn
+
         if move_tiles is None:
             if self.Computer_skips < 6:  # If not yet reached the limit of skips
                 print("No valid move found after exchanging tiles. Skipping turn.")
@@ -104,6 +96,12 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             else:  # If reached the limit of skips
                 print("No valid move found and skip limit reached. Game over.")
                 self.game_over()
+            return
+
+        if move_tiles is not None:
+            print("computer move = ", move_tiles)
+            self.handle_ai_moves(move_tiles)
+            self.update_player_tiles()
             return
 
     def handle_ai_moves(self, move_tiles):
@@ -121,6 +119,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                     tile.rect.topleft = tile_to_pixel(row, col)
                     used_tiles.add(tile)
                     break
+        self._submit_turn()
 
     def drawHand(self, scrn):
         '''
@@ -300,10 +299,10 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             currentPlayer.totalScore += self.update_player_score()
 
             self.update_player_tiles()
-
             # Switch to the other player
             self.switch_turn()
             self.scrabble_ai.clear_possible_moves()
+            self.update_player_tiles()
 
         else:
             # Invalid turn, return all tiles to rack
