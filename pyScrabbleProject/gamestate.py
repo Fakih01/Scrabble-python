@@ -253,6 +253,8 @@ class GameState:  # Loads everything necessary and starts the game.
             return
 
         if self.scrabble.submit_turn(tileList):
+            self.player.num_remaining_tiles()
+
             self.scrabble.moveCount = + 1
             # Valid turn, move all played tiles to game.
             for tile in self.player_tiles:

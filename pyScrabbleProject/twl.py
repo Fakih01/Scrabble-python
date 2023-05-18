@@ -133,7 +133,7 @@ def check(word):
     >>> twl.check('asdf')
     False
     '''
-    return word in _DAWG
+    return word in _compressed_dict
 
 
 def iterator():
@@ -149,25 +149,7 @@ def iterator():
     >>> words = set(twl.iterator())
     >>> words = list(twl.iterator())
     '''
-    return iter(_DAWG)
-
-
-def children(prefix):
-    '''
-    Returns a list of letters that may appear after `prefix`.
-    '''
-    return _DAWG.children(prefix)
-
-
-def anagram(letters):
-    '''
-    Yields words that can be formed with some or all of the
-    given `letters`. `letters` may include '?' characters as
-    a wildcard.
-    '''
-    for word in _DAWG.anagram(letters):
-        print(word)
-        yield word
+    return iter(_compressed_dict)
 
 
 END = '$'
@@ -271,7 +253,7 @@ class _Dawg(object):
             yield word
 
 
-_DAWG = _Dawg(
+_compressed_dict = _Dawg(
     "eJxknXd8lMXTwOfSLr33nmDvvStWsCB2UUDwkhxJII1LAgkqiB3svYvYBRvYBUUFG9gbYs"
     "OUIwmkkYRi5f3O7nM5+L1/3OfueXZ3+s7ObLtskZa3yqT1rv2l7aAHpf25a8W/3yeyoe91"
     "6fi+Rzq7f5au2W7XxpUu16bj93Z13xfj6ukb7epdcaSr76cJrv47L3VtPvBd18DZN7kGBz"

@@ -19,7 +19,7 @@ def ScrabbleDict():
 class AIScrabble(Scrabble):
     min_score = 0
 
-    def __init__(self, debug, scrabbleInstance):
+    def __init__(self, debug, player, scrabbleInstance):
         self.possible_moves = []
         self.this_move_score = 0
         self.this_move = None
@@ -28,7 +28,7 @@ class AIScrabble(Scrabble):
         self.direction = None
         self.dictionary = ScrabbleDict()
         self.bag = Bag()
-        self.player = Player(self.bag)
+        self.player = player
         super().__init__(debug, self.player, 2)
 
     def set_players(self, players):
@@ -93,7 +93,7 @@ class AIScrabble(Scrabble):
         new_instance.cross_check_results = self.cross_check_results
 
         # Set the player rack in the new_instance
-        new_instance.player._player_rack = self.player._player_rack.copy()
+        new_instance.player_rack = self.player_rack.copy()
 
         # Return the new instance
         return new_instance
@@ -139,7 +139,7 @@ class AIScrabble(Scrabble):
                 else:
                     print(self.scrabbleInstance.SBoard[j][i], end='')
             print('')
-        print("Rack: ", self.player._player_rack)
+        print("Rack: ", self.player_rack)
         #prints scrabble board to see if same  being used across code.
 
     def legal_move(self, word, last_pos, min_score):
@@ -263,16 +263,16 @@ class AIScrabble(Scrabble):
         self.extend_right(partial_word, current_node, anchor_pos, False)
         if limit > 0:
             for next_letter in current_node.children.keys():
-                if next_letter in self.player._player_rack:
-                    self.player._player_rack.remove(next_letter)
+                if next_letter in self.player_rack:
+                    self.player_rack.remove(next_letter)
                     self.left_part(partial_word + next_letter, current_node.children[next_letter], anchor_pos,
                                    limit - 1)
-                    self.player._player_rack.append(next_letter)
+                    self.player_rack.append(next_letter)
 
     def extend_right(self, partial_word, current_node, next_pos, anchor_filled):
         cache_key = (partial_word, current_node, next_pos, anchor_filled)
 
-        if len(partial_word) + len(self.player._player_rack) > 14:
+        if len(partial_word) + len(self.player_rack) > 14:
             return
 
         if not self.is_filled(next_pos) and current_node.is_word and anchor_filled:
@@ -281,18 +281,23 @@ class AIScrabble(Scrabble):
         if self.in_bounds(next_pos):
             if self.is_empty(next_pos):
                 for next_letter in current_node.children.keys():
-                    if next_letter in self.player._player_rack and next_pos in self.cross_check_results and next_letter in \
+                    if next_letter in self.player_rack and next_pos in self.cross_check_results and next_letter in \
                             self.cross_check_results[next_pos]:
-                        self.player._player_rack.remove(next_letter)
+                        self.player_rack.remove(next_letter)
                         self.extend_right(partial_word + next_letter, current_node.children[next_letter],
                                           self.next_coord(next_pos), True)
-                        self.player._player_rack.append(next_letter)
+                        self.player_rack.append(next_letter)
             else:
                 existing_letter = self.get_tile(next_pos)
                 if existing_letter in current_node.children.keys():
                     self.extend_right(partial_word + existing_letter, current_node.children[existing_letter],
                                       self.next_coord(next_pos), True)
 
+    def set_state(self, player_rack, board_state):
+        """Updates the AI's view of the game state."""
+        self.player_rack = player_rack
+        self.board_state = board_state
+        return self.player_rack, self.board_state
 
     def find_possible_words(self, min_score=0):
         print("finding all options")

@@ -16,17 +16,14 @@ from player import *
 
 class AIPlayer(Player):
     def __init__(self, bag, AIscrabbleInstance):
-        self.AIscrabbleInstance = AIscrabbleInstance
         super().__init__(bag)
+        self.AIscrabbleInstance = AIscrabbleInstance
 
     def make_ai_move(self):
         self.AIscrabbleInstance.find_possible_words()
         tiles_to_move_and_submit = self.AIscrabbleInstance.make_random_move()
         print("Tiles to move and submit", tiles_to_move_and_submit)
         return tiles_to_move_and_submit
-
-
-AIScrabbleInstance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, Player(Bag()), num_players=2))
 
 
 class ComputerGame:  # Loads everything necessary and starts the game.
@@ -49,28 +46,30 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
         # Initialize players
         self.players = {1: Player(self.bag), 2: None}  # We'll set player 2 (AI player) later
-        self.currentPlayer = self.players[1]
-        self.currentPlayerKey = 1
         self.player_scores = {1: 0, 2: 0}
         self.screen = pygame.display.set_mode((1000, 800))
 
         # Create scrabble instance
         self.scrabble = Scrabble(True, self.players, 2)
+        self.ai_player = AIPlayer(self.bag, None)
 
         # Now that we have a scrabble instance, we can create an AIPlayer with AIScrabble
-        self.scrabble_ai = AIScrabble(True, self.scrabble)
+        self.scrabble_ai = AIScrabble(True, self.ai_player, self.scrabble)
         self.ai_player = AIPlayer(self.bag, self.scrabble_ai)
         self.players[2] = self.ai_player  # Now we set player 2 to be the AI player
+        self.currentPlayer = self.players[1]
+        self.currentPlayerKey = 1
 
         # Update the initial tiles for both players
         for i, letter in enumerate(self.currentPlayer.get_rack()):
             self.player_tiles.append(
-                Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))  # section not fully working
+                Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
 
         self.currentMove = Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i])
 
     def computer_move(self):
         print("Computer move.")
+        self.scrabble_ai.set_state(self.players[2]._player_rack, self.scrabble.SBoard)
         for i in range(5):  # Try to make a move 5 times
             move_tiles = self.players[2].make_ai_move()
             if move_tiles is not None:
@@ -106,6 +105,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
     def handle_ai_moves(self, move_tiles):
         print("move tiles are", move_tiles)
+        print("player tiles", self.player_tiles)
         used_tiles = set()
         # Iterate through the tiles to move
         for (row, col, letter) in move_tiles:
@@ -283,7 +283,6 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         """
         print("move submitted")  # player.submit_move(self, self.board)  # currently broken
         print(f"Submitting move with move_count = {self.scrabble.moveCount}")
-        #  print("Your word is", self.player_tiles)  # word isn't rly printing rn
         currentPlayer = self.currentPlayer
         # Get a list of tiles that will be submitted
         tileList = []
@@ -295,6 +294,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         if len(tileList) == 0:
             return
         if self.scrabble.submit_turn(tileList):
+            self.currentPlayer.num_remaining_tiles()
             # Valid turn, move all played tiles to game.
             for tile in self.player_tiles:
                 if tile.on_board:
@@ -307,11 +307,10 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 currentPlayer.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
             currentPlayer.totalScore += self.update_player_score()
 
-            self.update_player_tiles()
             # Switch to the other player
             self.switch_turn()
-            self.scrabble_ai.clear_possible_moves()
             self.update_player_tiles()
+            self.scrabble_ai.clear_possible_moves()
 
         else:
             # Invalid turn, return all tiles to rack
@@ -336,6 +335,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
     def switch_turn(self):
         self.currentPlayerKey = 3 - self.currentPlayerKey
         self.currentPlayer = self.players[self.currentPlayerKey]
+        self.update_player_tiles()
         if self.currentPlayerKey == 1:
             print("Player", self.currentPlayerKey, "'s turn!")
 
