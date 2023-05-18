@@ -21,14 +21,13 @@ class ScrabbleBoard:
         self.position = position  # Stores the position of the scrabble board
         self.bag = Bag()
         self.player = Player(self.bag)
-        self.scrabs = Scrabble(True, self.player, 2)
-        self.board_tiles = self.scrabs.SBoard  # 2d array of size 15x15 to store tiles currently on the board
+        self.scrabble = Scrabble(True, self.player, 2)
+        self.board_tiles = self.scrabble.SBoard  # 2d array of size 15x15 to store tiles currently on the board
         self.resourceManagement = resourceManagement  # The resource manager
         self.boardSize = (15 * resourceFile.Tile_Size[0],
                      15 * resourceFile.Tile_Size[1])  # size of the scrabble board
         self.boardRect = pygame.Rect(self.position, self.boardSize)  # rectangle representing the scrabble board
         self.clean = True  # flag to indicate if the board is clean or not
-        #self.letter = letter
 
 
         # Initialises bonus system

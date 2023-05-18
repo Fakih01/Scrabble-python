@@ -50,43 +50,6 @@ class Tile(pygame.sprite.Sprite):
         self.UsedLetters = []
         self.submitted = False
 
-    def add_move(self, x, y, letter, pos):
-        print("add move is called in move class originating from gs class")  # works
-        # Appends word onto move array and checks for letters that are in the same position.
-        for i, j, l in self.m:
-            if i == x and j == y:
-                print("error: attempt to place letter in same position")
-                raise Exception("error: attempt to place letter in same position")
-
-        self.m.append((x, y, letter))
-        print(f"Tile '{letter}' placed at ({x}, {y})")
-        #  print(self.m)
-        #  print(self.worddd)
-        self.UsedLetters.append(letter)
-        word = ''.join(self.UsedLetters)
-        #self.bTiles[x][y] = letter
-        print("The letters you have used are", word)
-        # board.ScrabbleBoard.get_tile_pos(self,position)
-        #print("after add move", self.board_y, self.board_x, letter, self.on_board)
-        #print(self.bTiles)
-
-        return self.board_x, self.board_y, letter, self.on_board
-
-    def remove_move(self, x, y):  # Returns the removed letter
-
-        rem = None
-        for i, j, l in self.m:
-            if i == x and j == y:
-                # A match!
-                rem = (i, j, l)
-
-        if rem is None:
-            raise Exception("error: letter doesn't exist and cannot be removed")
-
-        self.m.remove(rem)
-        self.on_board = False
-        return rem[2]
-
     def move(self, pos):
         tile_x, tile_y = pixel_to_tile(*pos)
         if 0 <= tile_x < 15 and 0 <= tile_y < 15:  # working but self.board_x etc just not updating
@@ -183,14 +146,14 @@ class GameState:  # Loads everything necessary and starts the game.
                 sys.exit()
             elif evt.key == pygame.K_RETURN:
                 self._submit_turn()
-            elif evt.key == pygame.K_p:
+            elif evt.key == pygame.K_1:
                 self.scrabble._print_board()
-            elif evt.key == pygame.K_e:
+            elif evt.key == pygame.K_TAB:
                 old_tiles = self.player._player_rack
                 self.player.exchange_tiles(old_tiles)
                 self.update_player_tiles()  # Update player tiles after the exchange
                 print("Your new exchanged tiles are: ", self.player._player_rack)
-            elif evt.key == pygame.K_r:
+            elif evt.key == pygame.K_SPACE:
                 if self.selectedTile:
                     self.selectedTile.rerack()
                     self.selectedTile = None

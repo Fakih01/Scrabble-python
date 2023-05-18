@@ -102,9 +102,9 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
                 sys.exit()
             elif evt.key == pygame.K_RETURN:
                 self._submit_turn()
-            elif evt.key == pygame.K_p:
+            elif evt.key == pygame.K_1:
                 self.scrabble._print_board()
-            elif evt.key == pygame.K_e:
+            elif evt.key == pygame.K_TAB:
                 old_tiles = self.currentPlayer._player_rack
                 self.currentPlayer.exchange_tiles(old_tiles)
                 self.scrabble.players[self.currentPlayerKey].exchange_tiles(old_tiles)
@@ -114,7 +114,7 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
                 self.scrabble.switch_turn()
                 self.switch_turn()
                 self.update_player_tiles()
-            elif evt.key == pygame.K_r:
+            elif evt.key == pygame.K_SPACE:
                 if self.selectedTile:
                     self.selectedTile.rerack()
                     self.selectedTile = None

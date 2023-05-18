@@ -179,9 +179,9 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 sys.exit()
             elif evt.key == pygame.K_RETURN:
                 self._submit_turn()
-            elif evt.key == pygame.K_p:
+            elif evt.key == pygame.K_1:
                 self.scrabble._print_board()
-            elif evt.key == pygame.K_e:
+            elif evt.key == pygame.K_TAB:
                 old_tiles = self.currentPlayer._player_rack
                 self.currentPlayer.exchange_tiles(old_tiles)
                 self.update_player_tiles()  # Update player tiles after the exchange
@@ -189,15 +189,15 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 print("Switching turns")
                 self.player_exchange += 1
                 self.switch_turn()
-            elif evt.key == pygame.K_r:
+            elif evt.key == pygame.K_SPACE:
                 if self.selectedTile:
                     self.selectedTile.rerack()
                     self.selectedTile = None
-            elif evt.key == pygame.K_s:
+            elif evt.key == pygame.K_LCTRL:
                 print("You have skipped your turn")
                 self.switch_turn()
                 self.player_skip += 1
-            elif evt.key == pygame.K_h:
+            elif evt.key == pygame.K_QUESTION:
                 print("You have asked for help")
                 self.Player_help += 1
             elif self.selectedTile and self.selectedTile.is_blank and evt.unicode.isalpha():
