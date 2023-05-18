@@ -9,6 +9,7 @@ from scoringSystem import *
 from scrabble import *
 import itertools
 import threading
+from tileModule import *
 from gamestate import *
 from ScrabbleAI import *
 from player import *

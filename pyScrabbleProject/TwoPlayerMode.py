@@ -3,12 +3,12 @@ import sys
 from LettersSpritesheet import SpriteSheet
 import resourceFile
 from board import ScrabbleBoard as SB
-import deck
 import pygame
 from scoringSystem import *
 from scrabble import *
 from player import *
 from gamestate import *
+from tileModule import *
 
 
 class TwoPlayerGame:  # Loads everything necessary and starts the game.
@@ -21,7 +21,6 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         self.resourceManagement = resourceManagement
         self.board = SB((0, 0), self.resourceManagement)
         self.letterTiles = SpriteSheet('resources/images/LetterSprite.png')
-        self.deck = deck.Deck()
         self.selectedTile = None    # Selected tile should be a letter only
         self.player_tiles = []
         self.game_tiles = []
@@ -60,11 +59,7 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         self.player_scores[self.currentPlayerKey] += score
         return score
 
-    def total_player_score(self):
-        self.runni_score = 0
-
     def handle_event(self, evt):
-
         if evt.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
