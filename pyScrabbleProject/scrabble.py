@@ -364,16 +364,6 @@ class Scrabble:
             self.SBoard[row][col] = letter
 
 
-
-
-
-
-
-
-
-
-
-
 def test():
     scrabble = Scrabble(True, players=Player(Bag()), num_players=2)
 

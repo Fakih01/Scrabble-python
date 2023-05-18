@@ -166,6 +166,9 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
                 return True
         return False
 
+    def is_game_over(self):
+        return len(self.bag._bag) == 0 and len(self.currentPlayer.get_rack()) == 0
+
     def game_over(self):
         print("Game Over!")
         # Stop the game loop
@@ -207,6 +210,7 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         if len(tileList) == 0:
             return
         if self.scrabble.submit_turn(tileList):
+            self.currentPlayer.num_remaining_tiles()
             # Valid turn, move all played tiles to game.
             for tile in self.player_tiles:
                 if tile.on_board:
@@ -227,6 +231,13 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
             # Invalid turn, return all tiles to rack
             for tile in self.player_tiles:
                 tile.rerack()
+
+        if self.is_game_over():
+            # You need to decide what should happen when the game is over.
+            print("Game Over!")
+            print(f"Final score: {self.currentPlayer.get_total_score()}")
+            pygame.quit()
+            sys.exit()
 
     def switch_turn(self):
         self.currentPlayerKey = 3 - self.currentPlayerKey

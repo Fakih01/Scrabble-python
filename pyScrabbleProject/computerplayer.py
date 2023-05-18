@@ -71,7 +71,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
     def computer_move(self):
         print("Computer move.")
-        for _ in range(5):  # Try to make a move 5 times
+        for i in range(5):  # Try to make a move 5 times
             move_tiles = self.players[2].make_ai_move()
             if move_tiles is not None:
                 break  # If a valid move is found, break the loop
@@ -229,6 +229,9 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         turn_surface = font.render(turn_text, True, (255, 255, 255))
         scrn.blit(turn_surface, (770, 20))
 
+    def is_game_over(self):
+        return len(self.bag._bag) == 0 and len(self.currentPlayer.get_rack()) == 0
+
     def game_over(self):
         print("Game Over!")
         # Stop the game loop
@@ -318,6 +321,13 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 print("Computer tries again!")
                 self.computer_move()
                 #self.Computer_exchanges +=1
+
+        if self.is_game_over():
+            # You need to decide what should happen when the game is over.
+            print("Game Over!")
+            print(f"Final score: {self.currentPlayer.get_total_score()}")
+            pygame.quit()
+            sys.exit()
 
     def computer_move_thread(self):
         self.computer_move()

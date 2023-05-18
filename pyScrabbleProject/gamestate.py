@@ -231,6 +231,9 @@ class GameState:  # Loads everything necessary and starts the game.
                 return True
         return False
 
+    def is_game_over(self):
+        return len(self.bag._bag) == 0 and len(self.player.get_rack()) == 0
+
     def _submit_turn(self):
         """
         Submits the turn to the scrabble backend. Moves the player tiles to
@@ -265,3 +268,10 @@ class GameState:  # Loads everything necessary and starts the game.
             # Invalid turn, return all tiles to rack
             for tile in self.player_tiles:
                 tile.rerack()
+
+        if self.is_game_over():
+            # You need to decide what should happen when the game is over.
+            print("Game Over!")
+            print(f"Final score: {self.player.get_total_score()}")
+            pygame.quit()
+            sys.exit()
