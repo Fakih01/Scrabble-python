@@ -116,6 +116,47 @@ class SceneBase:
         self.SwitchToScene(None)
 
 
+class HelpPage(SceneBase):
+    def __init__(self):
+        SceneBase.__init__(self)
+
+    def process_input(self, events, pressed_keys):
+        for event in events:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: # Or any other key you prefer
+                # Switch back to the StartPage when Space is pressed
+                self.SwitchToScene(StartPage())
+
+    def update(self):
+        pass
+
+    def titlePage(self, screen):
+        # For the sake of brevity, the help page is a white screen with text
+        screen.fill((255, 255, 255))
+        black = (0, 0, 0)
+        # create a font object.
+        # 1st parameter is the font file
+        # which is present in pygame.
+        # 2nd parameter is size of the font
+        font = pygame.font.Font('freesansbold.ttf', 22)
+
+        # create a text surface object,
+        # on which text is drawn on it.
+        text = font.render('''This is a game of scrabble where your intelligence will be put to the test!''', True,
+                           black)
+
+        # create a rectangular object for the
+        # text surface object
+        text_rect = text.get_rect()
+        text_rect.center = (screen.get_width() // 2, screen.get_height() // 2 - 200)
+        screen.blit(text, text_rect)
+
+        font2 = pygame.font.Font('freesansbold.ttf', 20)
+        text2 = font2.render('''Press 'SPACE' to return to the menu''', True, black)
+        text_rect2 = text.get_rect()
+        text_rect2.center = (screen.get_width() // 2, screen.get_height() // 2)
+        screen.blit(text2, text_rect2)
+
+
 class StartPage(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
@@ -144,7 +185,8 @@ class StartPage(SceneBase):
                 AIScrabble.min_score = 10
                 self.needs_update = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_h:
-                print("You have chosen help")
+                self.SwitchToScene(HelpPage())
+                self.needs_update = True
 
     def update(self):
         pass

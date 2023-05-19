@@ -22,6 +22,16 @@ class GameState:  # Loads everything necessary and starts the game.
         self.selectedTile = None    # Selected tile should be a letter only
         self.player_tiles = []
         self.game_tiles = []
+        self.instructions = [
+            'Instructions:',
+            '1. Drag and drop tiles to the board',
+            '2. Press Enter to submit turn',
+            '3. Press Tab to exchange tiles',
+            '4. Press Space to rerack selected tile',
+            '5. When a blank tile is selected,',
+                'press any letter key to alter it',
+            '6. Press Esc to quit game'
+        ]
 
         for i, letter in enumerate(self.player.get_rack()):
             self.player_tiles.append(Tile(letter, self.letterTiles, PLAYER_TILE_POSITIONS[i]))
@@ -107,10 +117,19 @@ class GameState:  # Loads everything necessary and starts the game.
         score_surface = font.render(score_text, True, (255, 255, 255))
         scrn.blit(score_surface, (800, 50))
 
+    def render_instructions(self, scrn):
+        font = pygame.font.Font('freesansbold.ttf', 11)  # Change the size as needed
+        y_offset = 0  # This will be used to move each line down
+        for instruction in self.instructions:
+            instruction_surface = font.render(instruction, True, (255, 255, 255))
+            scrn.blit(instruction_surface, (800, 500 + y_offset))  # Change the coordinates as needed
+            y_offset += 30  # Change this value to adjust the space between line
+
     def draw(self, scrn):
         self.board.draw(scrn, self.currentMove)
         self.render_score(scrn)
         self.drawHand(scrn)
+        self.render_instructions(scrn)
 
     def update(self, delta):
         '''
@@ -177,6 +196,25 @@ class GameState:  # Loads everything necessary and starts the game.
 
 
 def test():
-    # Initialization
-    pygame.init()
-    pygame.font.init()
+    resourceManagement = resourceFile.ResourceManager()
+    game_state = GameState(resourceManagement)
+    assert isinstance(game_state, GameState)
+
+    # Test update_player_tiles method:
+    game_state.player._player_rack = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+    game_state.update_player_tiles()
+    assert len(game_state.player_tiles) == 7
+
+
+
+    # Test is_game_over method:
+    # Case when the game is not over
+    assert game_state.is_game_over() == False
+    # Case when the game is over
+    game_state.bag._bag = []
+    game_state.player._player_rack = []
+    assert game_state.is_game_over() == True
+
+    # Test _submit_turn method:
+    # This might require mocking the submit_turn method from the Scrabble class
+    # You can also add specific test cases depending on the words that are played in the turn

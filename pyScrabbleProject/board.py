@@ -98,43 +98,6 @@ class ScrabbleBoard:
         return (position[0] // resourceFile.Tile_Size[0],
                 position[1] // resourceFile.Tile_Size[1])
 
-    def get_tile(self, position):
-        '''
-        Returns the character on the tile. If it is empty, returns None.
-        '''
-        ind = self.get_tile_pos(position)
-        return self.board_tiles[ind[0]][ind[1]]
-
-    def remove_tile(self, position):
-        '''
-        Replaces the character at position pos on the board with None value.
-        If it is empty (None), it doesn't do a thing.
-        '''
-        ind = self.get_tile_pos(position)
-        self.board_tiles[ind[0]][ind[1]] = None
-
-    def place(self, position, letter):
-        '''
-        Converts letter to be placed into tile.Tile type.
-        '''
-        x, y = position
-        if self.board_tiles[x][y] is not None:
-            raise Exception("error: tile exists")
-
-        self.board_tiles[x][y] = tileModule.tileCheck(letter)
-
-    def take_back(self, position):
-        '''
-        Removes letter and returns it.
-        '''
-        x, y = position
-        t = self.board_tiles[x][y]
-
-        if t is None:
-            raise Exception("error: tile doesn't exist")
-
-        self.board_tiles[x][y] = None
-        return t
 
     def update(self, delta):
         '''

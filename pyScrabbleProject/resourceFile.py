@@ -44,6 +44,7 @@ class ResourceManager:
     Must be initialised and linked at the start of the program.
     '''
     def __init__(self):
+        pygame.init()
         self.fonts = {}
         self.board_tiles = {}
 
@@ -62,57 +63,8 @@ class ResourceManager:
         # Load fonts (for font writing)
         self.init_fonts()
 
-        # Loads playable tiles
-        self.init_letter_tiles(ord('a'))
-        self.init_letter_tiles(ord('a'))
-
         # Loads tiles on the board
         self.init_board_tiles()
-
-    def init_letter_tiles(self, starting):
-        '''
-        Loads all the playable tiles into memory.
-        '''
-        # initialise tiles by creating them on the fly
-        for letter in range(starting, starting + 26):
-            # First tile, 50x50
-            t = self.tilesMap.subsurface(
-                    [0, 0,
-                     Tile_Size[0], Tile_Size[0]]).copy()
-
-            # Render letter
-            letter_s = self.fonts[Scrabble_Tile_Font].render(
-                                chr(letter),
-                                True,
-                                colours.BLACK)
-            # Position letter in the middle of the tile
-            letter_sx = (Tile_Size[0] - letter_s.get_width())  / 2
-            letter_sy = (Tile_Size[1] - letter_s.get_height()) / 2
-
-            # Render score on the letter
-            if starting == ord('a'):
-                num_s = self.fonts[Scrabble_Number_Font].render(
-                                '0',
-                                True,
-                                colours.BLACK)
-            else:
-                num_s = self.fonts[Scrabble_Number_Font].render(
-                                    str(sS.POINTS[chr(letter)]),
-                                    True,
-                                    colours.BLACK)
-            # Position score on the bottom right of the tile
-            # Adds 2px of padding on each side
-            num_sx = Tile_Size[0] - num_s.get_width()  - 2
-            num_sy = Tile_Size[1] - num_s.get_height() - 2
-
-            t.blit(letter_s, (letter_sx, letter_sy))
-            t.blit(num_s, (num_sx, num_sy))
-            self.board_tiles[chr(letter)] = t
-
-        # Adds the blank tile (represented by question mark ` ')
-        t = self.tilesMap.subsurface(
-                [0, 0, Tile_Size[0], Tile_Size[1]]).copy()
-        self.board_tiles[' '] = t
 
     def init_fonts(self):
         '''

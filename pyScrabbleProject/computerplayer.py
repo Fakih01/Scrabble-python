@@ -44,7 +44,16 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         self.player_tiles = []
         self.game_tiles = []
         self.running_score = 0
-
+        self.instructions = [
+            'Instructions:',
+            '1. Drag and drop tiles to the board',
+            '2. Press Enter to submit turn',
+            '3. Press Tab to exchange tiles',
+            '4. Press Space to rerack selected tile',
+            '5. When a blank tile is selected,',
+            'press any letter key to alter it',
+            '6. Press Esc to quit game'
+        ]
         # Initialize players
         self.players = {1: Player(self.bag), 2: None}  # We'll set player 2 (AI player) later
         self.player_scores = {1: 0, 2: 0}
@@ -256,11 +265,20 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             # Draw the game over surface
             self.screen.blit(game_over_surface, game_over_rect, text_surface, text_surface_rect)
 
+    def render_instructions(self, scrn):
+        font = pygame.font.Font('freesansbold.ttf', 11)  # Change the size as needed
+        y_offset = 0  # This will be used to move each line down
+        for instruction in self.instructions:
+            instruction_surface = font.render(instruction, True, (255, 255, 255))
+            scrn.blit(instruction_surface, (800, 500 + y_offset))  # Change the coordinates as needed
+            y_offset += 30  # Change this value to adjust the space between line
+
     def draw(self, scrn):
         self.board.draw(scrn, self.currentMove)
         self.render_score(scrn)
         self.render_turn(scrn)
         self.drawHand(scrn)
+        self.render_instructions(scrn)
 
     def update(self, delta):
         '''
