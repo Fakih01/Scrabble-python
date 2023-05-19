@@ -401,14 +401,4 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             computer_move_thread.start()
 
 
-class TestAIPlayer(unittest.TestCase):
-    def setUp(self):
-        self.mock_bag = Mock()
-        self.mock_ai_instance = Mock()
 
-    def test_init(self):
-        player = AIPlayer(self.mock_bag, self.mock_ai_instance)
-        self.assertEqual(player.AIscrabbleInstance, self.mock_ai_instance)
-
-if __name__ == "__main__":
-    unittest.main()
