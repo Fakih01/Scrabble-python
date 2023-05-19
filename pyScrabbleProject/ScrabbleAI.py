@@ -1,13 +1,9 @@
 import pygame
-import itertools
-from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 from collections import defaultdict
 import random
-import cProfile
-from pyScrabbleProject.player import Bag
+from player import Bag
 from word_dictionary import *
-from gamestate import *
+from singleplayer import *
 from scrabble import *
 
 
@@ -53,7 +49,6 @@ class AIScrabble(Scrabble):
         tile = self.scrabbleInstance.SBoard[row][col]
         if tile is not None:
             tile = tile.lower()
-        #print("get tile:", tile)
         return tile
 
     def find_letters_on_board(self):
@@ -65,7 +60,7 @@ class AIScrabble(Scrabble):
                     pos = (r, c)
                     LetterList.append((pos, letter))
                     self.set_tile(pos, letter)
-        print("Letter list should be:", LetterList)
+        #print("Letter list should be:", LetterList)
         return LetterList
 
     def set_tile(self, pos, BoardTile):
@@ -172,21 +167,21 @@ class AIScrabble(Scrabble):
                     score += POINTS[self.scrabbleInstance.SBoard[row][col]]
         self.word_score = 0
         self.word_score += score*multiplier
-        print("Score for this word is:", self.word_score)
+        #print("Score for this word is:", self.word_score)
         return self.word_score
 
     def make_random_move(self):
         if self.possible_moves:  # Check if there are any possible moves
-            print("make random move possible moves= ", self.possible_moves)
+            #print("make random move possible moves= ", self.possible_moves)
             move = random.choice(self.possible_moves)  # Select a random move
-            print("chosen move = ", move)
+            #print("chosen move = ", move)
             word, start, end, letters = move[0]
             # Find the letters on the board
             letters_on_board = self.find_letters_on_board()
             tiles = [(row, col, letter) for (row, col), letter in letters.items() if
                      ((row, col), letter) not in letters_on_board]
 
-            print("Your tiles for submission are:", tiles)
+            #print("Your tiles for submission are:", tiles)
             print(f"Random move is '{word}' with a score of {move[1]}")
             return tiles
 
@@ -298,7 +293,6 @@ class AIScrabble(Scrabble):
             for anchor_pos in anchors:
                 if self.is_filled(self.prev_coord(anchor_pos)):
                     scan_pos = self.prev_coord(anchor_pos)
-                    print("scan_posssssssssssssssssssssssssssssssssssssssssssssssss", scan_pos)
                     partial_word = self.get_tile(scan_pos)
                     while self.is_filled(self.prev_coord(scan_pos)):
                         scan_pos = self.prev_coord(scan_pos)

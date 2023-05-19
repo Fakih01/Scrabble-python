@@ -7,7 +7,7 @@ import pygame
 from scoringSystem import *
 from scrabble import *
 from player import *
-from gamestate import *
+from singleplayer import *
 from tileModule import *
 
 
@@ -289,5 +289,4 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         else:
             self.currentPlayer = self.players[self.currentPlayerKey]
             print("Player", self.currentPlayerKey, "'s turn!")
-
 

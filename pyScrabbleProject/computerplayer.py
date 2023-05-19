@@ -12,7 +12,7 @@ from scrabble import *
 import itertools
 import threading
 from tileModule import *
-from gamestate import *
+from singleplayer import *
 from ScrabbleAI import *
 from player import *
 

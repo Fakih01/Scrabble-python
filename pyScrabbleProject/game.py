@@ -1,5 +1,5 @@
 import pygame
-import gamestate as gs
+import singleplayer as gs
 import resourceFile
 import TwoPlayerMode
 import computerplayer
