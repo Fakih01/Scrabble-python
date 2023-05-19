@@ -37,9 +37,12 @@ class Player:
         """
         # Only can return letters from the player's rack
         if self._all_letters_from_rack(old):
-            # Make sure there are enough letters to exchange
+            # Make sure there is enough letters to exchange
             if len(old) > len(self.bag._bag):
                 return
+
+            # Add the new tiles to the rack
+            self._draw_tiles(len(old))
 
             # Remove the old from the rack and add them to the bag
             for letter in old:
@@ -47,8 +50,6 @@ class Player:
                 self.bag._bag.append(letter)
 
             self.bag.shuffle_bag()
-            # Add the new tiles to the rack
-            self._draw_tiles(len(old))
 
     def _update_player_rack(self, tiles):
         """

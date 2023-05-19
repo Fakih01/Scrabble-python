@@ -1,6 +1,6 @@
 import random
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import Mock
 import sys
 import word_dictionary
 from LettersSpritesheet import SpriteSheet
@@ -9,7 +9,6 @@ from board import ScrabbleBoard as SB
 import pygame
 from scoringSystem import *
 from scrabble import *
-import itertools
 import threading
 from tileModule import *
 from singleplayer import *
@@ -140,8 +139,6 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             return
 
     def handle_ai_moves(self, move_tiles):
-        print("move tiles are", move_tiles)
-        print("player tiles", self.player_tiles)
         used_tiles = set()
         # Iterate through the tiles to move
         for (row, col, letter) in move_tiles:
@@ -373,6 +370,8 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 tile.rerack()
             if self.currentPlayerKey == 2:
                 print("Computer tries again!")
+                ComputerGame.min_score = 0
+                ComputerGame.max_score = 100
                 self.computer_move()
                 #self.Computer_exchanges +=1
 
@@ -401,8 +400,6 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             computer_move_thread = threading.Thread(target=self.computer_move_thread)
             computer_move_thread.start()
 
-import unittest
-from unittest.mock import Mock
 
 class TestAIPlayer(unittest.TestCase):
     def setUp(self):
