@@ -53,7 +53,6 @@ class Scrabble:
         Given a list of tiles (i, j, letter), check if valid, place on to board
         and add to player score.
         """
-        print("Tiles submitted:", tiles)
         if self._is_valid_move(tiles):
             self.current_player()._score_turn(tiles)
             self._place_move(tiles)

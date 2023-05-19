@@ -167,7 +167,6 @@ class AIScrabble(Scrabble):
                     score += POINTS[self.scrabbleInstance.SBoard[row][col]]
         self.word_score = 0
         self.word_score += score*multiplier
-        #print("Score for this word is:", self.word_score)
         return self.word_score
 
     def make_random_move(self):

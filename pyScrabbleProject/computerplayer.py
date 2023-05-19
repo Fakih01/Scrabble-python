@@ -24,7 +24,6 @@ class AIPlayer(Player):
     def make_ai_move(self):
         self.AIscrabbleInstance.find_possible_words(AIScrabble.min_score)
         tiles_to_move_and_submit = self.AIscrabbleInstance.make_random_move()
-        print("Tiles to move and submit", tiles_to_move_and_submit)
         return tiles_to_move_and_submit
 
 
@@ -133,7 +132,6 @@ class ComputerGame:  # Loads everything necessary and starts the game.
             return
 
         if move_tiles is not None:
-            print("computer move = ", move_tiles)
             self.handle_ai_moves(move_tiles)
             self.update_player_tiles()
             return
@@ -334,7 +332,6 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 game tiles and updates the player tiles before switching turns.
                 """
         print("move submitted")
-        print(f"Submitting move with move_count = {self.scrabble.moveCount}")
         currentPlayer = self.currentPlayer
         # Get a list of tiles that will be submitted
         tileList = []
@@ -373,7 +370,6 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 ComputerGame.min_score = 0
                 ComputerGame.max_score = 100
                 self.computer_move()
-                #self.Computer_exchanges +=1
 
         if self.is_game_over():
             # You need to decide what should happen when the game is over.
