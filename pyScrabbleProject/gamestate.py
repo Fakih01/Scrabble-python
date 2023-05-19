@@ -6,7 +6,7 @@ import resourceFile
 from board import ScrabbleBoard as SB
 import pygame
 from tileModule import *
-from pyScrabbleProject.player import Player
+from pyScrabbleProject.player import Player, Bag
 from scoringSystem import *
 from scrabble import *
 
@@ -174,3 +174,9 @@ class GameState:  # Loads everything necessary and starts the game.
             print(f"Final score: {self.player.get_total_score()}")
             pygame.quit()
             sys.exit()
+
+
+def test():
+    # Initialization
+    pygame.init()
+    pygame.font.init()

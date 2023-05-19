@@ -1,6 +1,6 @@
 import random
 import sys
-import twl
+import word_dictionary
 from LettersSpritesheet import SpriteSheet
 import resourceFile
 from board import ScrabbleBoard as SB
@@ -21,7 +21,7 @@ class AIPlayer(Player):
         self.AIscrabbleInstance = AIscrabbleInstance
 
     def make_ai_move(self):
-        self.AIscrabbleInstance.find_possible_words()
+        self.AIscrabbleInstance.find_possible_words(AIScrabble.min_score)
         tiles_to_move_and_submit = self.AIscrabbleInstance.make_random_move()
         print("Tiles to move and submit", tiles_to_move_and_submit)
         return tiles_to_move_and_submit
@@ -60,6 +60,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         self.players[2] = self.ai_player  # Now we set player 2 to be the AI player
         self.currentPlayer = self.players[1]
         self.currentPlayerKey = 1
+
 
         # Update the initial tiles for both players
         for i, letter in enumerate(self.currentPlayer.get_rack()):

@@ -4,9 +4,9 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from collections import defaultdict
 import random
-
+import cProfile
 from pyScrabbleProject.player import Bag
-from twl import *
+from word_dictionary import *
 from gamestate import *
 from scrabble import *
 
@@ -27,9 +27,9 @@ class AIScrabble(Scrabble):
         self.scrabbleInstance = scrabbleInstance
         self.direction = None
         self.dictionary = ScrabbleDict()
-        self.bag = Bag()
         self.player = player
         super().__init__(debug, self.player, 2)
+        #print("min score is", self.min_score)
 
     def set_players(self, players):
         self.players = players
@@ -79,24 +79,6 @@ class AIScrabble(Scrabble):
             for c in range(15):
                 pos = (r, c)
                 yield pos
-
-    def copy(self):
-        # Create a new AIScrabble instance with the same debug and num_players settings
-        new_instance = AIScrabble(debug=True, scrabbleInstance=Scrabble(True, ), num_players=2)
-
-        # Set the tiles in the new_instance based on the current instance's tiles
-        for pos in self.all_positions():
-            new_instance.set_tile(pos, self.get_tile(pos))
-
-        # Set the direction and cross_check_results in the new_instance
-        new_instance.direction = self.direction
-        new_instance.cross_check_results = self.cross_check_results
-
-        # Set the player rack in the new_instance
-        new_instance.player_rack = self.player_rack.copy()
-
-        # Return the new instance
-        return new_instance
 
     def prev_coord(self, pos):
         row, col = pos
@@ -161,8 +143,6 @@ class AIScrabble(Scrabble):
             self.this_move = (word, start, end, letters)
             self.this_move_score = score
             self.possible_moves.append((self.this_move, self.this_move_score))
-            print("These are the possible moves:", self.possible_moves)
-            # we return true if a move is found
             return True
         return False
 
@@ -270,8 +250,6 @@ class AIScrabble(Scrabble):
                     self.player_rack.append(next_letter)
 
     def extend_right(self, partial_word, current_node, next_pos, anchor_filled):
-        cache_key = (partial_word, current_node, next_pos, anchor_filled)
-
         if len(partial_word) + len(self.player_rack) > 14:
             return
 
@@ -299,7 +277,8 @@ class AIScrabble(Scrabble):
         self.board_state = board_state
         return self.player_rack, self.board_state
 
-    def find_possible_words(self, min_score=0):
+    def find_possible_words(self, min_score):
+        print(min_score)
         print("finding all options")
         self.find_letters_on_board()  # Call to find_letters_on_board here
         word_counter = 0  # Add a counter for words found
@@ -361,3 +340,4 @@ class Trie:
         if word_node is None:
             return False
         return word_node.is_word
+

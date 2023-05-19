@@ -2,30 +2,8 @@
 A convenient, self-contained, 515 KB Scrabble dictionary module, ideal
 for use in word games.
 
-Functionality:
-
-- Check if a word is in the dictionary.
-- Enumerate all words in the dictionary.
-- Determine what letters may appear after a given prefix.
-- Determine what words can be formed by anagramming a set of letters.
-
-Sample usage:
-
->>> import twl
->>> twl.check('dog')
-True
->>> twl.check('dgo')
-False
->>> words = set(twl.iterator())
->>> len(words)
-178691
->>> twl.children('dude')
-['$', 'd', 'e', 's']
->>> list(twl.anagram('top'))
-['op', 'opt', 'pot', 'to', 'top']
-
 Provides a simple API using the TWL06 (official Scrabble tournament)
-dictionary. Contains American English words that are between 2 and 15
+dictionary. Contains English words that are between 2 and 15
 characters long, inclusive. The dictionary contains 178691 words.
 
 Implemented using a DAWG (Directed Acyclic Word Graph) packed in a
@@ -124,31 +102,10 @@ import zlib
 
 
 def check(word):
-    '''
-    Returns True if `word` exists in the TWL06 dictionary.
-    Returns False otherwise.
-
-    >>> twl.check('word')
-    True
-    >>> twl.check('asdf')
-    False
-    '''
     return word in _compressed_dict
 
 
 def iterator():
-    '''
-    Returns an iterator that will yield all words stored in the
-    dictionary in alphabetical order.
-
-    Useful if you want to use this module simply as a method of
-    loading words into another type of data structure. (After
-    all, this Python module is significantly smaller than the
-    original word list file - 500KB vs 1900KB.)
-
-    >>> words = set(twl.iterator())
-    >>> words = list(twl.iterator())
-    '''
     return iter(_compressed_dict)
 
 
@@ -190,30 +147,6 @@ class _Dawg(object):
             index += 1
         return result
 
-    def _anagram(self, bag, index=0, letters=None):
-        letters = letters or []
-        while True:
-            more, letter, link = self._get_record(index)
-            if letter == END:
-                yield ''.join(letters)
-            elif bag[letter]:
-                bag[letter] -= 1
-                letters.append(letter)
-                for word in self._anagram(bag, link, letters):
-                    yield word
-                letters.pop(-1)
-                bag[letter] += 1
-            elif bag[WILD]:
-                bag[WILD] -= 1
-                letters.append(letter)
-                for word in self._anagram(bag, link, letters):
-                    yield word
-                letters.pop(-1)
-                bag[WILD] += 1
-            if not more:
-                break
-            index += 1
-
     def __contains__(self, word):
         index = 0
         for letter in itertools.chain(word, END):
@@ -244,13 +177,6 @@ class _Dawg(object):
             if index in (0, None):
                 return []
         return self._get_children(index)
-
-    def anagram(self, letters):
-        bag = collections.defaultdict(int)
-        for letter in letters:
-            bag[letter] += 1
-        for word in self._anagram(bag):
-            yield word
 
 
 _compressed_dict = _Dawg(

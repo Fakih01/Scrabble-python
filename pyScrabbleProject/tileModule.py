@@ -74,23 +74,19 @@ class Tile(pygame.sprite.Sprite):
         tile_x, tile_y = pixel_to_tile(*pos)
         if 0 <= tile_x < 15 and 0 <= tile_y < 15:  # working but self.board_x etc just not updating
             self.on_board = True
-            self.board_x = tile_x  # now is updating
-            self.board_y = tile_y  # same
+            self.board_x = tile_x
+            self.board_y = tile_y
             self.rect.topleft = tile_to_pixel(tile_x, tile_y)
-            print("tile status= ", self.on_board)
         else:
             self.on_board = False
             self.rect.topleft = self.tray_position
-            print("tile status =", self.on_board)
 
     def tile(self):
         """Returns the tuple (board_x, board_y, letter)."""
-        print(f"printing from tile function: board_x={self.board_x}, board_y={self.board_y}, letter={self.letter}")
         return self.board_x, self.board_y, self.letter
 
     def rerack(self):
         """Moves the tile back to the rack."""
         self.on_board = False
         self.rect.topleft = self.tray_position
-        print(self.letter, "back to rack")
 

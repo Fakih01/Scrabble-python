@@ -37,12 +37,9 @@ class Player:
         """
         # Only can return letters from the player's rack
         if self._all_letters_from_rack(old):
-            # Make sure there is enough letters to exchange
+            # Make sure there are enough letters to exchange
             if len(old) > len(self.bag._bag):
                 return
-
-            # Add the new tiles to the rack
-            self._draw_tiles(len(old))
 
             # Remove the old from the rack and add them to the bag
             for letter in old:
@@ -50,6 +47,8 @@ class Player:
                 self.bag._bag.append(letter)
 
             self.bag.shuffle_bag()
+            # Add the new tiles to the rack
+            self._draw_tiles(len(old))
 
     def _update_player_rack(self, tiles):
         """
@@ -140,3 +139,40 @@ class Bag:
         """
         shuffle(self._bag)
 
+
+def test2():
+    # Instantiate Bag
+    bag = Bag()
+    assert len(bag._bag) == 100  # As per standard Scrabble rules
+
+    # Instantiate Player with Bag
+    player = Player(bag)
+    assert len(player._player_rack) == 7  # A player should start with 7 tiles
+
+    # Test number of remaining tiles in the bag
+    assert player.num_remaining_tiles() == 93  # 100 total - 7 drawn for player
+
+    # Test drawing additional tiles
+    player._draw_tiles(3)
+    assert len(player._player_rack) == 10  # Player should now have 10 tiles
+    assert player.num_remaining_tiles() == 90  # 100 total - 10 drawn for player
+
+    # Test exchanging tiles
+    old_tiles = player._player_rack[:3]  # Let's exchange the first 3 tiles
+    player.exchange_tiles(old_tiles)
+    assert len(player._player_rack) == 10  # Player should still have 10 tiles
+    assert player.num_remaining_tiles() == 90  # 100 total - 10 drawn for player
+    assert old_tiles not in player._player_rack  # The old tiles should no longer be in the player's rack
+
+    # Test rack update
+    player._update_player_rack([('a', 'b', tile) for tile in player._player_rack[:3]])
+    assert len(player._player_rack) == 10  # Player should still have 10 tiles
+    assert player.num_remaining_tiles() == 90  # 100 total - 10 drawn for player
+
+    # Test scoring
+    SBoard = [[''] * 15 for _ in range(15)]  # Assume an empty Scrabble board
+    start = (0, 0)
+    end = (0, 2)
+    letters = {(0, i): player._player_rack[i] for i in range(3)}  # Create a 3-letter word at the top left of the board
+    player._score_word(SBoard, start, end, letters)
+    # Add more assertions here as needed, depending on your POINTS and MULTIPLIERS

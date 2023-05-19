@@ -1,7 +1,7 @@
 import itertools
 from random import shuffle
 from scoringSystem import *
-import twl
+import word_dictionary
 from player import *
 from gamestate import *
 
@@ -344,15 +344,11 @@ class Scrabble:
         return True
 
     def _is_valid_word(self, word):
-        """
-        Uses twl to determine if word is a valid word.
-        """
         word = word.lower()
-        ret = twl.check(word)  # checks if word is valid
+        ret = word_dictionary.check(word)  # checks if word is valid
         if self.debug:
             print(f"Word '{word}' is valid? {ret}")
-        #list(twl.anagram(word))
-        return twl.check(word)
+        return word_dictionary.check(word)
 
     def _place_move(self, tiles):
         """
@@ -367,7 +363,39 @@ class Scrabble:
 def test():
     scrabble = Scrabble(True, players=Player(Bag()), num_players=2)
 
-    scrabble._print_board()
+
+    # Test 1: Test the '_is_valid_word' method with a valid word
+    print("Test 1: Valid Word Test")
+    assert scrabble._is_valid_word('cat')
+    print("Passed Valid Word Test!")
+
+    # Test 2: Test the '_is_valid_word' method with an invalid word
+    print("Test 2: Invalid Word Test")
+    assert not scrabble._is_valid_word('notaword')
+    print("Passed Invalid Word Test!")
+
+
+    # Test 3: Test the 'submit_turn' method with an invalid turn
+    print("Test 3: Invalid Turn Test")
+    assert not scrabble.submit_turn([(7, 7, 'C'), (8, 8, 'A'), (9, 9, 'T')])
+    print("Passed Invalid Turn Test!")
+
+    # Test 4: Test the 'switch_turn' method
+    print("Test 4: Switch Turn Test")
+    scrabble.switch_turn()
+    assert scrabble.current_player_index == 2
+    scrabble.switch_turn()
+    assert scrabble.current_player_index == 1
+    print("Passed Switch Turn Test!")
+
+    # Test 5: Test '_is_colinear' method with a colinear and non-colinear inputs
+    print("Test 5: Colinear Test")
+    assert scrabble._is_colinear([1, 1, 1], [1, 2, 3])
+    assert not scrabble._is_colinear([1, 2, 3], [1, 2, 3])
+    print("Passed Colinear Test!")
+
+
+
 
 
 if __name__ == '__main__':
