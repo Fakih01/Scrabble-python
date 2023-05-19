@@ -1,12 +1,11 @@
 import sys
 from random import shuffle
-
 from LettersSpritesheet import SpriteSheet
 import resourceFile
 from board import ScrabbleBoard as SB
 import pygame
 from tileModule import *
-from pyScrabbleProject.player import Player, Bag
+from player import Player, Bag
 from scoringSystem import *
 from scrabble import *
 

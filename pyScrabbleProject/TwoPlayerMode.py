@@ -16,6 +16,7 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         self.bag = Bag()
         self.players = {1: Player(self.bag), 2: Player(self.bag)}
         self.Player_skip = 0
+        self.players_skip = {1: 0, 2: 0}
         self.player_exchange = 0
         self.scrabble = Scrabble(True, self.players, 2)
         self.resourceManagement = resourceManagement
@@ -38,7 +39,8 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
             '4. Press Space to rerack selected tile',
             '5. When a blank tile is selected,',
             'press any letter key to alter it',
-            '6. Press Esc to quit game'
+            '6.Press LCTRL to skip your turn',
+            '7. Press Esc to quit game'
         ]
 
 
@@ -129,6 +131,13 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
                 self.selectedTile.tileBlock = self.letterTiles.image_at(LETTER_COORDINATES[letter])
                 blank_index = self.player_tiles.index(self.selectedTile)
                 self.currentPlayer._player_rack[blank_index] = letter
+            elif evt.key == pygame.K_LCTRL:
+                print("Skipped turn")
+                self.players_skip[self.currentPlayerKey] += 1
+                if self.players_skip[self.currentPlayerKey] == 2:
+                    self.game_over()
+                else:
+                    self.switch_turn()
 
     # Add a method to render the score
     def render_score(self, scrn):
@@ -185,25 +194,42 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
 
     def game_over(self):
         print("Game Over!")
-        # Stop the game loop
         self.running = False
+
+        # Calculate the winner
+        if self.players_skip[1] == 2:
+            winner = "Player 2"
+        elif self.players_skip[2] == 2:
+            winner = "Player 1"
+        elif self.player_scores[1] > self.player_scores[2]:
+            winner = "Player 1"
+        elif self.player_scores[1] < self.player_scores[2]:
+            winner = "Player 2"
+        else:
+            winner = "It's a Tie"
 
         # Create a game over surface and position it in the middle of the screen
         font = pygame.font.Font('freesansbold.ttf', 64)
         font2 = pygame.font.Font('freesansbold.ttf', 44)
-        game_over_surface = font.render("Game Over", True, (0, 0, 0))
-        game_over_rect = game_over_surface.get_rect(center=(400, 400))
-        text_surface = font2.render("Press 'ESC' to close screen", True, (0, 0, 0))
+        game_over_surface = font.render("GAME OVER", True, (255, 255, 255))
+        game_over_rect = game_over_surface.get_rect(center=(400, 200))
+        winner_surface = font.render(winner + " Wins!", True, (255, 255, 255))
+        winner_rect = winner_surface.get_rect(center=(500, 350))
+        text_surface = font2.render("Press 'ESC' to close screen", True, (255, 255, 255))
         text_surface_rect = text_surface.get_rect(center=(500, 500))
 
         while not self.running:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()
 
             # Draw the game over surface
-            self.screen.blit(game_over_surface, game_over_rect, text_surface, text_surface_rect)
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(game_over_surface, game_over_rect)
+            self.screen.blit(winner_surface, winner_rect)
+            self.screen.blit(text_surface, text_surface_rect)
+            pygame.display.flip()
 
     def _submit_turn(self):
         """
@@ -225,6 +251,7 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
             return
         if self.scrabble.submit_turn(tileList):
             self.currentPlayer.num_remaining_tiles()
+            self.players_skip[self.currentPlayerKey] = 0
             # Valid turn, move all played tiles to game.
             for tile in self.player_tiles:
                 if tile.on_board:

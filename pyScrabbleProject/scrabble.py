@@ -3,7 +3,6 @@ from random import shuffle
 from scoringSystem import *
 import word_dictionary
 from player import *
-from gamestate import *
 
 
 class Scrabble:
