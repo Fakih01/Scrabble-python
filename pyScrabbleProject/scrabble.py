@@ -67,7 +67,7 @@ class Scrabble:
     def _is_valid_move(self, tiles):
         """
         Returns True if the list of tiles forms valid words and are placed
-        in a correct manner.
+        in an appropriate manner.
         """
         rows = []
         cols = []
@@ -92,7 +92,7 @@ class Scrabble:
 
     def _is_colinear(self, rows, cols):
         """
-        True if all rows are equal or all cols are equal.
+        returns true if all the rows are equal or all cols are equal.
         """
         ret = len(set(rows)) == 1 or len(set(cols)) == 1
         if self.debug and ret == False:
@@ -102,7 +102,7 @@ class Scrabble:
 
     def _all_unique_places(self, rows, cols):
         """
-        Cannot have duplicate places
+        ensures 2 tiles not in same place
         """
         places = list(zip(rows, cols))
         ret = len(set(places)) == len(places)
@@ -147,8 +147,8 @@ class Scrabble:
 
     def _touches_others(self, rows, cols):
         """
-        Word being played must touch existing tiles, or first move must start
-        in the middle of the board.
+        Word being played must touch existing tiles on board, or first move must start
+        in the middle of the board (on star).
         """
         places = list(zip(rows, cols))
 

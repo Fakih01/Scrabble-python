@@ -289,3 +289,5 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         else:
             self.currentPlayer = self.players[self.currentPlayerKey]
             print("Player", self.currentPlayerKey, "'s turn!")
+
+

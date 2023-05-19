@@ -135,7 +135,7 @@ class Bag:
 
     def shuffle_bag(self):
         """
-        Randomizes the contents of the bag.
+        Randomizes contents of the bag.
         """
         shuffle(self._bag)
 

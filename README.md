@@ -1,0 +1,25 @@
+1. mf314
+2. pyScrabbleProject
+   1. resources
+      1. fonts
+         1. OpenSans-Regular.ttf 
+         2. FuturaExtended.ttf
+      2. images
+         1. LetterSprite.png
+         2. tile_resources.png
+         3. tile_resources.xcf
+      3. board_data.txt
+   2. board.py 
+   3. colours.py 
+   4. computerplayer.py 
+   5. game.py 
+   6. gamestate.py 
+   7. LettersSpritesheet.py 
+   8. player.py 
+   9. resourceFile.py 
+   10. scoringSystem.py 
+   11. scrabble.py 
+   12. ScrabbleAI.py 
+   13. tileModule.py 
+   14. TwoPlayerMode.py 
+   15. word_dictionary.py

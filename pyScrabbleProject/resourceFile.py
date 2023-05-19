@@ -19,14 +19,7 @@ Fonts_Config = [
     # Used for everything else
     ('OpenSans',    'OpenSans-Regular.ttf',     [50])
 ]
-'''
-Helps with loading the different types of board tiles (i.e. where they are on
-the tile map).
-Format:
-    (tile_shortname,
-     should_render_shortname?,
-     (x, y, w, h))
-'''
+
 Board_Tiles = [
     ('NM', False, ( 50,  0, 50, 50)),     # Normal tile
     ('MD', False, (100,  0, 50, 50)),     # That tile in the middle
