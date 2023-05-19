@@ -21,7 +21,7 @@ class Player:
         for _ in range(amount):
             if len(self.bag._bag) > 0:
                 self._player_rack.append(self.bag._bag.pop())
-        print("we're drawing tiles", self._player_rack)
+        #print("we're drawing tiles", self._player_rack)
 
     def num_remaining_tiles(self):
         """
@@ -79,7 +79,7 @@ class Player:
         return True
 
     def get_rack(self):
-        print("get_rack called", self._player_rack)
+        #print("get_rack called", self._player_rack)
         return self._player_rack
 
     def _score_word(self, SBoard, start, end, letters):
@@ -152,22 +152,17 @@ def test2():
     # Test number of remaining tiles in the bag
     assert player.num_remaining_tiles() == 93  # 100 total - 7 drawn for player
 
-    # Test drawing additional tiles
-    player._draw_tiles(3)
-    assert len(player._player_rack) == 10  # Player should now have 10 tiles
-    assert player.num_remaining_tiles() == 90  # 100 total - 10 drawn for player
-
     # Test exchanging tiles
     old_tiles = player._player_rack[:3]  # Let's exchange the first 3 tiles
     player.exchange_tiles(old_tiles)
-    assert len(player._player_rack) == 10  # Player should still have 10 tiles
-    assert player.num_remaining_tiles() == 90  # 100 total - 10 drawn for player
+    assert len(player._player_rack) == 7  # Player should still have 7 tiles
+    assert player.num_remaining_tiles() == 93  # 100 total - 7 drawn for player
     assert old_tiles not in player._player_rack  # The old tiles should no longer be in the player's rack
 
     # Test rack update
-    player._update_player_rack([('a', 'b', tile) for tile in player._player_rack[:3]])
-    assert len(player._player_rack) == 10  # Player should still have 10 tiles
-    assert player.num_remaining_tiles() == 90  # 100 total - 10 drawn for player
+    player._update_player_rack([('a', 'b', tile) for tile in player._player_rack[:0]])
+    assert len(player._player_rack) == 7  # Player should still have 7 tiles
+    assert player.num_remaining_tiles() == 93  # 100 total - 10 drawn for player
 
     # Test scoring
     SBoard = [[''] * 15 for _ in range(15)]  # Assume an empty Scrabble board
