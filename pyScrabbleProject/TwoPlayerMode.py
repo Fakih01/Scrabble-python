@@ -250,7 +250,6 @@ class TwoPlayerGame:  # Loads everything necessary and starts the game.
         if len(tileList) == 0:
             return
         if self.scrabble.submit_turn(tileList):
-            self.currentPlayer.num_remaining_tiles()
             self.players_skip[self.currentPlayerKey] = 0
             # Valid turn, move all played tiles to game.
             for tile in self.player_tiles:

@@ -1,6 +1,4 @@
 import random
-import unittest
-from unittest.mock import Mock
 import sys
 import word_dictionary
 from LettersSpritesheet import SpriteSheet
@@ -34,6 +32,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         pygame.init()
         self.player_exchange = 0
         self.player_skip = 0
+        self.players_skip = {1: 0, 2: 0}
         self.Computer_skips = 0
         self.Computer_exchanges = 0
         self.bag = Bag()
@@ -226,8 +225,11 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                     self.selectedTile = None
             elif evt.key == pygame.K_LCTRL:
                 print("You have skipped your turn")
-                self.switch_turn()
-                self.player_skip += 1
+                self.players_skip[self.currentPlayerKey] += 1
+                if self.players_skip[self.currentPlayerKey] == 2:
+                    self.game_over()
+                else:
+                    self.switch_turn()
             elif self.selectedTile and self.selectedTile.is_blank and evt.unicode.isalpha():
                 letter = evt.unicode.lower()
                 self.selectedTile.letter = letter
@@ -265,21 +267,25 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         self.running = False
 
         # Calculate the winner
-        if self.player_scores[1] > self.player_scores[2]:
+        if self.players_skip[1] == 2:
+            winner = "Player 2"
+        elif self.players_skip[2] == 2:
+            winner = "Player 1"
+        elif self.player_scores[1] > self.player_scores[2]:
             winner = "Player 1"
         elif self.player_scores[1] < self.player_scores[2]:
-            winner = "Computer Player"
+            winner = "Player 2"
         else:
             winner = "It's a Tie"
 
         # Create a game over surface and position it in the middle of the screen
         font = pygame.font.Font('freesansbold.ttf', 64)
         font2 = pygame.font.Font('freesansbold.ttf', 44)
-        game_over_surface = font.render("Game Over", True, (0, 0, 0))
-        game_over_rect = game_over_surface.get_rect(center=(400, 400))
-        winner_surface = font.render(winner + " Wins!", True, (0, 0, 0))
-        winner_rect = winner_surface.get_rect(center=(500, 450))
-        text_surface = font2.render("Press 'ESC' to close screen", True, (0, 0, 0))
+        game_over_surface = font.render("GAME OVER", True, (255, 255, 255))
+        game_over_rect = game_over_surface.get_rect(center=(400, 200))
+        winner_surface = font.render(winner + " Wins!", True, (255, 255, 255))
+        winner_rect = winner_surface.get_rect(center=(500, 350))
+        text_surface = font2.render("Press 'ESC' to close screen", True, (255, 255, 255))
         text_surface_rect = text_surface.get_rect(center=(500, 500))
 
         while not self.running:
@@ -289,7 +295,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                     sys.exit()
 
             # Draw the game over surface
-            self.screen.fill((255, 255, 255))
+            self.screen.fill((0, 0, 0))
             self.screen.blit(game_over_surface, game_over_rect)
             self.screen.blit(winner_surface, winner_rect)
             self.screen.blit(text_surface, text_surface_rect)
@@ -343,7 +349,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         if len(tileList) == 0:
             return
         if self.scrabble.submit_turn(tileList):
-            self.currentPlayer.num_remaining_tiles()
+            self.players_skip[self.currentPlayerKey] = 0
             # Valid turn, move all played tiles to game.
             for tile in self.player_tiles:
                 if tile.on_board:
