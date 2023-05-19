@@ -31,7 +31,7 @@ class ComputerGame:  # Loads everything necessary and starts the game.
     min_score = 0
 
     def __init__(self, resourceManagement):
-        self.Player_help = 0
+        pygame.init()
         self.player_exchange = 0
         self.player_skip = 0
         self.Computer_skips = 0
@@ -62,14 +62,37 @@ class ComputerGame:  # Loads everything necessary and starts the game.
         # Create scrabble instance
         self.scrabble = Scrabble(True, self.players, 2)
         self.ai_player = AIPlayer(self.bag, None)
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        while True:
+            self.screen.fill((0, 0, 0))  # fill the screen with black
+            text = font.render('Choose Difficulty: Easy (E) or Hard (H)', True, (255, 255, 255))
+            textRect = text.get_rect()
+            textRect.center = (500, 400)  # position the text
+            self.screen.blit(text, textRect)
+            pygame.display.flip()  # update the display
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_e:
+                        ComputerGame.min_score = 0  # set min_score for easy difficulty
+                        ComputerGame.max_score = 12
+                        break
+                    elif event.key == pygame.K_h:
+                        ComputerGame.min_score = 10  # set min_score for hard difficulty
+                        ComputerGame.max_score = 100
+                        break
+            else:
+                continue
+            break
 
         # Now that we have a scrabble instance, we can create an AIPlayer with AIScrabble
-        self.scrabble_ai = AIScrabble(True, self.ai_player, self.scrabble)
+        self.scrabble_ai = AIScrabble(True, self.ai_player, self.scrabble, min_score=ComputerGame.min_score, max_score=ComputerGame.max_score)
         self.ai_player = AIPlayer(self.bag, self.scrabble_ai)
         self.players[2] = self.ai_player  # Now we set player 2 to be the AI player
         self.currentPlayer = self.players[1]
         self.currentPlayerKey = 1
-
 
         # Update the initial tiles for both players
         for i, letter in enumerate(self.currentPlayer.get_rack()):
@@ -208,9 +231,6 @@ class ComputerGame:  # Loads everything necessary and starts the game.
                 print("You have skipped your turn")
                 self.switch_turn()
                 self.player_skip += 1
-            elif evt.key == pygame.K_QUESTION:
-                print("You have asked for help")
-                self.Player_help += 1
             elif self.selectedTile and self.selectedTile.is_blank and evt.unicode.isalpha():
                 letter = evt.unicode.lower()
                 self.selectedTile.letter = letter
@@ -245,25 +265,38 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
     def game_over(self):
         print("Game Over!")
-        # Stop the game loop
         self.running = False
+
+        # Calculate the winner
+        if self.player_scores[1] > self.player_scores[2]:
+            winner = "Player 1"
+        elif self.player_scores[1] < self.player_scores[2]:
+            winner = "Computer Player"
+        else:
+            winner = "It's a Tie"
 
         # Create a game over surface and position it in the middle of the screen
         font = pygame.font.Font('freesansbold.ttf', 64)
         font2 = pygame.font.Font('freesansbold.ttf', 44)
         game_over_surface = font.render("Game Over", True, (0, 0, 0))
         game_over_rect = game_over_surface.get_rect(center=(400, 400))
+        winner_surface = font.render(winner + " Wins!", True, (0, 0, 0))
+        winner_rect = winner_surface.get_rect(center=(500, 450))
         text_surface = font2.render("Press 'ESC' to close screen", True, (0, 0, 0))
         text_surface_rect = text_surface.get_rect(center=(500, 500))
 
         while not self.running:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()
 
             # Draw the game over surface
-            self.screen.blit(game_over_surface, game_over_rect, text_surface, text_surface_rect)
+            self.screen.fill((255, 255, 255))
+            self.screen.blit(game_over_surface, game_over_rect)
+            self.screen.blit(winner_surface, winner_rect)
+            self.screen.blit(text_surface, text_surface_rect)
+            pygame.display.flip()
 
     def render_instructions(self, scrn):
         font = pygame.font.Font('freesansbold.ttf', 11)  # Change the size as needed
@@ -298,10 +331,10 @@ class ComputerGame:  # Loads everything necessary and starts the game.
 
     def _submit_turn(self):
         """
-        Submits the turn to the scrabble backend. Moves the player tiles to
-        game tiles and updates the player tiles.
-        """
-        print("move submitted")  # player.submit_move(self, self.board)  # currently broken
+                Submits move to scrabble backend. Moves the player tiles to
+                game tiles and updates the player tiles before switching turns.
+                """
+        print("move submitted")
         print(f"Submitting move with move_count = {self.scrabble.moveCount}")
         currentPlayer = self.currentPlayer
         # Get a list of tiles that will be submitted

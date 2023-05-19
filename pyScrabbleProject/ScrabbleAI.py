@@ -18,8 +18,9 @@ def ScrabbleDict():
 
 class AIScrabble(Scrabble):
     min_score = 0
+    max_score= 0
 
-    def __init__(self, debug, player, scrabbleInstance):
+    def __init__(self, debug, player, scrabbleInstance, min_score, max_score):
         self.possible_moves = []
         self.this_move_score = 0
         self.this_move = None
@@ -28,8 +29,16 @@ class AIScrabble(Scrabble):
         self.direction = None
         self.dictionary = ScrabbleDict()
         self.player = player
+        self.min_score = min_score
+        self.max_score = max_score
+        AIScrabble.min_score = self.min_score
+        AIScrabble.max_score = self.max_score
         super().__init__(debug, self.player, 2)
-        #print("min score is", self.min_score)
+        print("min score is", self.min_score, "max score is", self.max_score)
+        if self.min_score == 0:
+            print("You chose easy level")
+        else:
+            print("you have chosen hard level")
 
     def set_players(self, players):
         self.players = players
@@ -139,7 +148,7 @@ class AIScrabble(Scrabble):
             letters[temp_pos] = letter
             temp_pos = self.next_coord(temp_pos)
         score = self._score_word_for_best_move(start, end, letters, word)
-        if score > min_score:
+        if score > self.min_score and score <= self.max_score:
             self.this_move = (word, start, end, letters)
             self.this_move_score = score
             self.possible_moves.append((self.this_move, self.this_move_score))

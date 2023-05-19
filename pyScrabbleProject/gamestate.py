@@ -152,12 +152,10 @@ class GameState:  # Loads everything necessary and starts the game.
 
     def _submit_turn(self):
         """
-        Submits the turn to the scrabble backend. Moves the player tiles to
+        Submits move to scrabble backend. Moves the player tiles to
         game tiles and updates the player tiles.
         """
-        print("move submitted")  # player.submit_move(self, self.board)  # currently broken
-        #  print("Your word is", self.player_tiles)  # word isn't rly printing rn
-
+        print("move submitted")
         # Get a list of tiles that will be submitted
         tileList = []
         for tile in self.player_tiles:
