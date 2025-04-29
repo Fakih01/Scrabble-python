@@ -171,8 +171,9 @@ class AIScrabble(Scrabble):
 
     def make_random_move(self):
         if self.possible_moves:  # Check if there are any possible moves
-            #print("make random move possible moves= ", self.possible_moves)
+            #print("make moves only possib;le starting with letter A")
             move = random.choice(self.possible_moves)  # Select a random move
+
             #print("chosen move = ", move)
             word, start, end, letters = move[0]
             # Find the letters on the board
@@ -217,7 +218,7 @@ class AIScrabble(Scrabble):
                 letters_after = letters_after + self.get_tile(scan_pos)
 
             if len(letters_before) == 0 and len(letters_after) == 0:
-                legal_here = list('abcdefghijklmnopqrstuvwxyz')
+                legal_here = list('a')
             else:
                 legal_here = []
                 for letter in 'abcdefghijklmnopqrstuvwxyz':
